@@ -1,0 +1,5 @@
+"","test","P.value"
+"1","syn_all and nonsyn_all",0
+"2","nonsyn_all and stop_all",0.999999796500346
+"3","syn_allCpG and syn_allnonCpG",0.0147440484404636
+"4","nonsyn_allCpG and nonsyn_allnonCpG",2.10799331348367e-11
