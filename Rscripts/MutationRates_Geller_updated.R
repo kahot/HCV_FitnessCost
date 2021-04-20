@@ -85,7 +85,7 @@ for (i in 1:nrow(se)){
 mutDF$SE<-se$se
 mutDF$CI<-mutDF$SE*1.96
 
-write.csv(mutDF,"Output1A/Geller/Geller.MutRates.Summary_updated.csv")
+write.csv(mutDF,"Output/Geller/Geller.MutRates.Summary_updated.csv")
 
 #Plot MutRates with CI
 #remove non-mutation combination
@@ -99,7 +99,7 @@ ggplot(mutDF2, aes(x=Mutation, y=MutRate))+
         theme(axis.title.x=element_blank())+ylab("Estimated mutation Rate ± SE")+
         theme_bw()+labs(x="")
 
-ggsave("Output1A/Geller/MutRates_all_SE.pdf", width = 5,height = 3)
+ggsave("Output/Geller/MutRates_all_SE.pdf", width = 5,height = 3)
 
 
 ggplot(mutDF, aes(x=Mutation, y=MutRate))+
@@ -109,7 +109,7 @@ ggplot(mutDF, aes(x=Mutation, y=MutRate))+
         theme(axis.title.x=element_blank())+ylab("Estimated mutation Rate ± 95% CI")+
         theme_bw()+
         labs(x="")
-ggsave("Output1A/Geller/MutRates_all_95CI.pdf", width = 5,height = 3)
+ggsave("Output/Geller/MutRates_all_95CI.pdf", width = 5,height = 3)
 
 
 #transition only
@@ -121,7 +121,7 @@ ggplot(mutTs, aes(x=Mutation, y=MutRate))+
         theme(axis.title.x=element_blank())+ylab("Estimated mutation rate ± SE")+
         theme_bw()+
         labs(x="")
-ggsave("Output1A/Geller/TsMutRates_SE.pdf", width = 4,height = 3)
+ggsave("Output/Geller/TsMutRates_SE.pdf", width = 4,height = 3)
 
 ggplot(mutTs, aes(x=Mutation, y=MutRate))+
         geom_errorbar(data=mutTs, aes(ymin=pmax(MutRate-CI,0), ymax=MutRate+CI), width=.2, size=.5, color="#0000FF66")+
@@ -131,7 +131,7 @@ ggplot(mutTs, aes(x=Mutation, y=MutRate))+
         theme_bw()+theme(panel.grid.major.x = element_blank())+
         scale_x_discrete(labels=c(expression("A" %->% "G"),expression("C" %->% "U"),expression("G" %->% "A"),expression("U" %->% "C")))+ 
         theme(axis.text.x=element_text(color=1)) 
-ggsave("Output1A/Geller/TsMutRates_95CI.pdf", width = 4,height = 3)
+ggsave("Output/Geller/TsMutRates_95CI.pdf", width = 4,height = 3)
 
 MM2<-MM[MM$mutation=="AG"|MM$mutation=="GA"|MM$mutation=="CU"|MM$mutation=="UC",]
 ggplot()+
@@ -144,7 +144,7 @@ ggplot()+
         xlab('')+
         scale_x_discrete(breaks=c("AG","CU","GA","UC"),labels=c(expression(A%->%G),expression(C%->%"T"),expression(G%->%A),expression("T"%->%C)))+
         theme(axis.text.x =element_text(color=1, size=12))
-ggsave("Output1A/Geller/TsMutRates_CI_boxplot.pdf", width =4.5, heigh=4)
+ggsave("Output/Geller/TsMutRates_CI_boxplot.pdf", width =4.5, heigh=4)
 
 
 
@@ -160,7 +160,7 @@ ggplot()+
         scale_x_discrete(breaks=c("AG","CU","GA","UC"),labels=c(expression(A%->%G),expression(C%->%"T"),expression(G%->%A),expression("T"%->%C)))+
         theme(axis.text.x =element_text(color=1, size=12))
 
-ggsave("Output1A/Geller/MutRates_SE.pdf", width =4.5, heigh=4)
+ggsave("Output/Geller/MutRates_SE.pdf", width =4.5, heigh=4)
 
 
 
@@ -208,7 +208,7 @@ for (j in 1:3 ){
         }
         CSV[[j]]<-df
         names(CSV)[j]<-lines[j]
-        #write.csv(df,paste0("Output1A/Geller/",j,".csv"))
+        #write.csv(df,paste0("Output/Geller/",j,".csv"))
 }
 
 transition2<-function(nuc){
@@ -257,7 +257,7 @@ for (i in 1:3){
         df$Sequence<-tolower(df$Sequence)
         df$transition<-unlist(sapply(df$Sequence, function(x) transition2(x)))
         for (k in 1:nrow(df)){ df$freq.Ts[k]<-df[k,paste0(df$transition[k])]/df$depth[k]}
-        write.csv(df,paste0("Output1A/Geller/Overview_",lines[i],".csv"))
+        write.csv(df,paste0("Output/Geller/Overview_",lines[i],".csv"))
         MF[[i]]<-df
         names(MF)[i]<-names(CSV[i])
 }
@@ -277,7 +277,7 @@ mut$mean<-apply(mut[,2:4],1,mean, na.rm=T)
 MutFreq<-merge(mut,gell[,c("H77_site","Sequence","Protein","Type")],by="H77_site", all=T)
 colnames(MutFreq)<-c("pos","Line1","Line2","Line3","mean","ref","Protein", "Type")
 
-write.csv(MutFreq, "Output1A/Geller/Geller_MutFrequency.csv")
+write.csv(MutFreq, "Output/Geller/Geller_MutFrequency.csv")
 
 ###
 #Syn vs. nonsyn
@@ -285,7 +285,7 @@ write.csv(MutFreq, "Output1A/Geller/Geller_MutFrequency.csv")
 mf<-MutFreq[MutFreq$pos>381 & MutFreq$pos<=9336,]
 nrow(mf[is.na(mf$mean),])
 
-ov<-read.csv("Output1A/H77_Overview.csv",row.names = 1)
+ov<-read.csv("Output/H77_Overview.csv",row.names = 1)
 colnames(ov)[2:3]<-c("refH77","typeH77")
 
 mf<-merge(mf, ov, by="pos", all.x = T)
@@ -296,7 +296,7 @@ mean(mf$mean[mf$makesCpG==0],na.rm=T) #0.0001564748
 mean(mf$mean[mf$bigAAChange==1],na.rm=T) #0.0001881563
 mean(mf$mean[mf$bigAAChange==0],na.rm=T) #0.0001597525
 
-write.csv(mf,"Output1A/Geller/Geller_mf_overview.csv")
+write.csv(mf,"Output/Geller/Geller_mf_overview.csv")
 
 
 ###
@@ -360,8 +360,8 @@ BRData$Shape[is.na(BRData$Shape)]<-0
 which(colnames(BRData)=="gene")
 BRData<-BRData[,-12]
 BRData<-BRData[!is.na(BRData$mean),]
-write.csv(BRData, "Output1A/Geller/geller_BRData.csv")
-BRData<-read.csv("Output1A/Geller/geller_BRData.csv", row.names = 1, stringsAsFactors = F)
+write.csv(BRData, "Output/Geller/geller_BRData.csv")
+BRData<-read.csv("Output/Geller/geller_BRData.csv", row.names = 1, stringsAsFactors = F)
 
 library(betareg)
 df<-BRData[BRData$Stop == 0,]
@@ -415,7 +415,7 @@ AIC(m2,m3,m4,m5,m6)
 source("Rscripts/BetaEffectSize.R")
 
 effects<-BetaEffectSize(m2)
-write.csv(effects, "Output1A/Geller/beta_reg_effects.csv")
+write.csv(effects, "Output/Geller/beta_reg_effects.csv")
 
 
 
@@ -468,7 +468,7 @@ mfC$quartile <- with(mfC, cut(mean,
                                 breaks=quantile(mean, probs=seq(0,1, by=0.25), na.rm=TRUE), 
                                 include.lowest=TRUE, labels=c("1","2","3","4")))
 
-write.csv(mfC,"Output1A/Geller/mf_C.csv")
+write.csv(mfC,"Output/Geller/mf_C.csv")
 mfC.q<-aggregate(mfC$mean, by=list(mfC$quartile), mean)
 colnames(mfC.q)<-c("Q","mf")
 mfC.q$mr<-mfC.q$mf/23.3

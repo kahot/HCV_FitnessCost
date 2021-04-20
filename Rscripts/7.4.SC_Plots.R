@@ -17,7 +17,7 @@ scaleFUN <- function(x) sprintf("%.2f", x)
 col2_light<-qualitative_hcl(6, palette="Set3")
 ###########
 
-df<-read.csv("Output1A/SelCoeff/SC.csv", stringsAsFactors = F, row.names = 1)
+df<-read.csv("Output/SelCoeff/SC.csv", stringsAsFactors = F, row.names = 1)
 #coding regions only
 df<-df[df$pos>=342,]
 
@@ -35,7 +35,7 @@ end<-df$pos[nrow(df)]
 genetable<-genetable[genetable$pos>=342&genetable$pos<=end,]
 
 sc<-merge(df, genetable, by="pos")
-write.csv(sc,"Output1A/SelCoeff/SC_gene.csv") 
+write.csv(sc,"Output/SelCoeff/SC_gene.csv") 
 
 #Average mean SC
 AveSC<-aggregate(sc$EstSC,by=list(sc$gene), mean, na.rm = TRUE)
@@ -52,7 +52,7 @@ for (i in 1:11){
 
 
 AveSC$se<-SESC2$se
-write.csv(AveSC, "Output1A/SelCoeff/SC_ave_se_by_gene.csv")
+write.csv(AveSC, "Output/SelCoeff/SC_ave_se_by_gene.csv")
 
 #######
 ##########################################
@@ -89,5 +89,5 @@ ggplot(scdata2,aes(x=base, y=S.C., fill=factor(type)))+geom_boxplot(outlier.alph
     geom_vline(xintercept = c(1:3)+0.5, color="gray60")+
     scale_x_discrete(breaks=c("A","T","C","G"),labels=c(expression(A%->%G),expression("T"%->%C),expression(C%->%"T"),expression(G%->%A)))
 
-ggsave("Output1A/SelCoeff/SC.byNT_noCpG.pdf", width = 6,height = 4)
+ggsave("Output/SelCoeff/SC.byNT_noCpG.pdf", width = 6,height = 4)
 

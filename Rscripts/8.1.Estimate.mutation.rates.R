@@ -15,7 +15,7 @@ div.colors<-c(colors2[1],col2_light[1],colors2[3],col2_light[3],colors2[5],col2_
 color.genes<-qualitative_hcl(11, palette="Dark3")
 
 
-TS<-read.csv("Output1A/MutFreq.filtered/Filtered.Ts.Q35.csv",stringsAsFactors = F, row.names = 1)
+TS<-read.csv("Output/MutFreq.filtered/Filtered.Ts.Q35.csv",stringsAsFactors = F, row.names = 1)
 stops<-TS[TS$Type=="stop",]
 #transition rates (only c and g are present)
 stopC<-stops[stops$ref =="c",]
@@ -27,8 +27,8 @@ mean(stopG$mean) #0.001915474
 mean(stopC$mean) #0.002165682
 
 
-Tv1<-read.csv("Output1A/MutFreq.filtered/Filtered.Tv1.MutFreq.Q35.csv",stringsAsFactors = F, row.names = 1)
-Tv2<-read.csv("Output1A/MutFreq.filtered/Filtered.Tv2.MutFreq.Q35.csv",stringsAsFactors = F, row.names = 1)
+Tv1<-read.csv("Output/MutFreq.filtered/Filtered.Tv1.MutFreq.Q35.csv",stringsAsFactors = F, row.names = 1)
+Tv2<-read.csv("Output/MutFreq.filtered/Filtered.Tv2.MutFreq.Q35.csv",stringsAsFactors = F, row.names = 1)
 
 stopTv1<-Tv1[Tv1$Type.tv1=="stop",]
 stopTv2<-Tv2[Tv2$Type.tv2=="stop",]
@@ -91,7 +91,7 @@ ggplot(MutratesM, aes(x= mutation, y=value, color=variable ))+
         scale_x_discrete(breaks=c("CG","GC","CA","TA","GT","TG","AT","AC","GA","CT","TC","AG"),labels=c(expression(C%->%G),expression(G%->%C),expression(C%->%A),expression("T"%->%A),
                                               expression(G%->%"T"),expression("T"%->%G),expression(A%->%"T"),expression(A%->%C),expression(G%->%A),expression(C%->%"T"), expression("T"%->%C), expression(A%->%G)))+
         theme(axis.text.x = element_text(angle = 90))
-ggsave("Output1A/SummaryFig/Estimated_MutRates_invivo-invitro.pdf", width = 6, height = 4)
+ggsave("Output/SummaryFig/Estimated_MutRates_invivo-invitro.pdf", width = 6, height = 4)
 
 
 cor.test(Mutrates$`In vivo estimation`, Mutrates$`In vitro`, method="spearman")
@@ -106,4 +106,4 @@ ggplot(mrates2, aes(x=`In vivo`, y=`In vitro`))+
         geom_point(size=2, color=colors2[5])+
         theme_bw()+
         geom_smooth(method='lm', formula= y~x, se=F, lwd=.2, color="gray50")
-ggsave("Output1A/SummaryFig/Invivo.Invtro.Mutation.rates.correlation.pdf", width = 4.5, height = 4)
+ggsave("Output/SummaryFig/Invivo.Invtro.Mutation.rates.correlation.pdf", width = 4.5, height = 4)

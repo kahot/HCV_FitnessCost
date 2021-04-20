@@ -1,5 +1,6 @@
-#Check the new sam files aligend to the consensus of each patient. 
-#Remove the reads with a large hamming distance from the consensus
+##Quality filter SAM files mapped to each sample's consensus.
+#Reads are mapped separately for merged (me) and unmerged (un) files
+#Sam files are avilable at Figshare (download them to 'Output/sam/').
 
 library(stringr)
 library(ape)
@@ -9,12 +10,12 @@ library(msa)
 library(car)
 library(readtext)
 
-dir.create("Output1A/HammingDistanceFiltering/")
+dir.create("Output/HammingDistanceFiltering/")
 suppressMessages(library(msa))
 
 
 #read sam file
-HCVsams<-list.files("Output1A/sam/",recursive = F,pattern="sam")
+HCVsams<-list.files("Output/sam/",recursive = F,pattern="sam")
 coln<-c('QNAME','Flag','RefName','Pos','MapQ','cigar','MRNM','Mpos','isize','seq','Qual','tag1','tag2','tag3','tag4','tag5','tag6')
 
 ham.distance<-list()
@@ -27,7 +28,7 @@ sum<-list()
 for (i in 1:length(HCVsams)){
         print(i)
         print(HCVsams[i])
-        sam<-read.table(paste0("Output1A/sam/",HCVsams[i]),skip=3, col.names=coln, sep = "\t",fill=T, comment.char="",quote= "")
+        sam<-read.table(paste0("Output/sam/",HCVsams[i]),skip=3, col.names=coln, sep = "\t",fill=T, comment.char="",quote= "")
         sam<-sam[,1:11]
         
         #only the mapped reads
@@ -41,7 +42,7 @@ for (i in 1:length(HCVsams)){
         #hist(sam$MapQ,main=paste('Histogram of Mapping Quliaty for ',fname2))
         
         #read the consensus seq of each sample
-        consensus<-read.dna(paste0("Output1A/Consensus/",file.name,"_consensus.fasta"), format = "fasta",as.character=TRUE)
+        consensus<-read.dna(paste0("Output/Consensus/",file.name,"_consensus.fasta"), format = "fasta",as.character=TRUE)
         #cheange bases in the consensus sequence to upper case
         consensus<-as.character(sapply(consensus, function(v) {
                 if (is.character(v)) return(toupper(v))
@@ -79,7 +80,7 @@ for (i in 1:length(HCVsams)){
         }
         
         
-        filename<-paste0("Output1A/HammingDistanceFiltering/",fname2,".pdf")
+        filename<-paste0("Output/HammingDistanceFiltering/",fname2,".pdf")
         pdf(filename, width =10, height = 5)
         par(mfrow=c(1,2))
         par(mar = c(5,4,4,2))
@@ -128,7 +129,7 @@ for (i in 1:length(HCVsams)){
         with_indels_removed<-length(Large.ham2[Large.ham2==T])
         print(paste("# of removed reads with indels: ",with_indels_removed))
         sam_RC<-rbind(sam_re,sam_re2)
-        write.table(sam_RC, paste0("Output1A/sam2/", fname2,"-filtered.sam"),sep="\t", quote=F,row.names=F,col.names=F)
+        write.table(sam_RC, paste0("Output/sam2/", fname2,"-filtered.sam"),sep="\t", quote=F,row.names=F,col.names=F)
         
         sum[[i]]<-data.frame(fname2,mapped.reads,no_indels, with_indels,no_indels_removed,with_indels_removed)
         dev.off()
@@ -141,15 +142,15 @@ hamm.sum<-do.call(rbind,ham.distance)
 rown<-do.call(rbind, filenames)
 rownames(hamm.sum)<-rown
 hammingDist.summary<-data.frame(t(hamm.sum))
-write.csv(hammingDist.summary,paste0("Output1A/HammingDistanceFiltering/HammingDistSummary_",Sys.Date(),".csv"))
+write.csv(hammingDist.summary,paste0("Output/HammingDistanceFiltering/HammingDistSummary_",Sys.Date(),".csv"))
 
 #with indels
 hamm.sum_indel<-do.call(rbind,ham.distance.indel)
 rownames(hamm.sum_indel)<-rown
 hammingDist.summary_indel<-data.frame(t(hamm.sum_indel))
-write.csv(hammingDist.summary_indel,paste0("Output1A/HammingDistanceFiltering/HammingDistSummary_indels_",Sys.Date(),".csv"))
+write.csv(hammingDist.summary_indel,paste0("Output/HammingDistanceFiltering/HammingDistSummary_indels_",Sys.Date(),".csv"))
 
 output.summary<-data.frame(do.call(rbind,sum))
 colnames(output.summary)<-c("Sample ID","# mapped reads", "# reads w/o indels ", 
                             "# reads w/ indels","removed reads w/o indels", "removed w/ indels")
-write.csv(output.summary,paste0("Output1A/HammingDistanceFiltering/Filter_Summary2_",Sys.Date(),".csv"))
+write.csv(output.summary,paste0("Output/HammingDistanceFiltering/Filter_Summary2_",Sys.Date(),".csv"))

@@ -10,12 +10,12 @@ cols4.60<-paste0(cols4,"66")
 
 ####  Make Plots  #####
 
-brData<-read.csv("Output1A/BetaReg/BetaReg.Data.Shape.csv", stringsAsFactors = F, row.names = 1)
-d<-read.csv("Output1A/MutFreq.filtered/Filtered.Ts.Q35.csv",row.names = 1)
+brData<-read.csv("Output/BetaReg/BetaReg.Data.Shape.csv", stringsAsFactors = F, row.names = 1)
+d<-read.csv("Output/MutFreq.filtered/Filtered.Ts.Q35.csv",row.names = 1)
 d<-d[d$pos>=342,]
 
 #Results file: modcoeff data (model.g2)
-modcoef<-read.csv("Output1A/BetaReg/BetaReg_BestModel.csv",stringsAsFactors = F)
+modcoef<-read.csv("Output/BetaReg/BetaReg_BestModel.csv",stringsAsFactors = F)
 rownames(modcoef)<-modcoef$X
 modcoef<-modcoef[,-1]
 modcoef<-modcoef[c("(Intercept)","t","c","g","CpG","Nonsyn","bigAAChange","t:Nonsyn","c:Nonsyn","g:Nonsyn"),]
@@ -25,7 +25,7 @@ modcoef<-modcoef[c("(Intercept)","t","c","g","CpG","Nonsyn","bigAAChange","t:Non
 ####
 # plot syn vs nonsyn estiamted and observed mf
 source("Rscripts/BetaRegPlotFunction2.R")
-pdf("Output1A/GLM/Betareg.plot.pdf", width = 5.5,height = 5)
+pdf("Output/GLM/Betareg.plot.pdf", width = 5.5,height = 5)
 col.par <- "gray95"
 makePlotAll(main="")
 plotMFs(0, paste0(colors2[5],"66"),  -.1)
@@ -40,7 +40,7 @@ dev.off()
 
 ######
 ### Plot the effect size ###
-effects<-read.csv("Output1A/BetaReg/BetaReg.effects.csv",stringsAsFactors = F)
+effects<-read.csv("Output/BetaReg/BetaReg.effects.csv",stringsAsFactors = F)
 effects$factor<-factor(effects$factor, levels=effects$factor[1:17])
 
 effects$percent<-effects$percent*100
@@ -55,7 +55,7 @@ ggplot(effects, aes(factor,percent)) +
         theme(panel.grid.major.y = element_line(color="gray80",linetype=5))+
         labs(x="", y="Estimated effects (%)")
 
-ggsave("Output1A/SummaryFig.Filtered/BetaReg.effects.pdf", width = 9, height = 6)
+ggsave("Output/SummaryFig.Filtered/BetaReg.effects.pdf", width = 9, height = 6)
 
 ##effect size for SC
 ggplot(effects, aes(factor,percent_SC)) +
@@ -66,7 +66,7 @@ ggplot(effects, aes(factor,percent_SC)) +
         theme(panel.grid.major.y = element_line(color="gray80",linetype=5))+
         labs(x="", y="Estimated effects (%)")
 
-ggsave("Output1A/SummaryFig.Filtered/BetaReg.effects.SC.pdf", width = 9, height = 6)
+ggsave("Output/SummaryFig.Filtered/BetaReg.effects.SC.pdf", width = 9, height = 6)
 
 
 ##effect size for MF & SC
@@ -85,5 +85,5 @@ ggplot(effects2, aes(factor,percent, group=Type, fill=Type)) +
         labs(x="", y="Estimated effects (%)")+
         theme(legend.title = element_blank())
 
-ggsave("Output1A/SummaryFig.Filtered/BetaReg.effects.MF-SC2.pdf", width = 9, height = 5)
+ggsave("Output/SummaryFig.Filtered/BetaReg.effects.MF-SC2.pdf", width = 9, height = 5)
 

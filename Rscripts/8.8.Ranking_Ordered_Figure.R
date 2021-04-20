@@ -67,13 +67,13 @@ plotter <- function(d){
 }
 
 
-TS<-read.csv("Output1A/MutFreq.filtered/Filtered.Ts.Q35.csv",stringsAsFactors = F,row.names=1)
+TS<-read.csv("Output/MutFreq.filtered/Filtered.Ts.Q35.csv",stringsAsFactors = F,row.names=1)
 #coding region only
 TS<-TS[TS$pos>341,c(1,197:ncol(TS))]
 colnames(TS)[colnames(TS)=="Type"]<-"TypeOfSite"
 colnames(TS)[colnames(TS)=="mean"]<-"Freq"
 
-pdf("Output1A/SummaryFig/MutFreq-Ordered1A.pdf", height = 5.5, width = 9)
+pdf("Output/SummaryFig/MutFreq-Ordered1A.pdf", height = 5.5, width = 9)
 plotter(TS)
 dev.off() 
         

@@ -18,7 +18,7 @@ col2_light<-qualitative_hcl(6, palette="Set3")
 ###########
 
 #### Site by Site mut rate:
-mf<-read.csv("Output1A/Geller/Geller_mf_overview.csv", row.names = 1, stringsAsFactors = F)
+mf<-read.csv("Output/Geller/Geller_mf_overview.csv", row.names = 1, stringsAsFactors = F)
 min(mf$mean[mf$mean>0], na.rm = T) #2.780489e-06
 nrow(mf[mf$mean==0,]) #1044
 
@@ -28,7 +28,7 @@ mf2$mean[mf2$mean==0]<-1*10^-6
 
 mf2$mr<-mf2$mean/23.3
 
-df<-read.csv("Output1A/Mutfreq.filtered/Filtered.Ts.Q35.csv",stringsAsFactors = F,row.names = 1 )
+df<-read.csv("Output/Mutfreq.filtered/Filtered.Ts.Q35.csv",stringsAsFactors = F,row.names = 1 )
 df<-df[,c(1,197:203)]
 
 df.ind<-merge(df, mf2[,c("pos","mr")], by="pos")
@@ -37,9 +37,9 @@ df.ind$EstSC<-as.numeric(df.ind$EstSC)
 df<-df.ind
 mean(df$EstSC, na.rm = T) # 0.002026144 vs. 0.002036205 (single mutrate for each nt)
 
-depth<-read.csv("Output1A/ReadDepth_sum.csv", stringsAsFactors = F, row.names = 1)
+depth<-read.csv("Output/ReadDepth_sum.csv", stringsAsFactors = F, row.names = 1)
 df<-merge(df,depth, by="pos", all.x=T)
-#write.csv(df,"Output1A/SelCoeff/SC.csv") #add the rad depth to SC files
+#write.csv(df,"Output/SelCoeff/SC.csv") #add the rad depth to SC files
 df<-df[!is.na(df$EstSC),]
 
 
@@ -59,7 +59,7 @@ sc<-merge(df, genetable, by="pos")
 
 
 #### Histogram comparison
-SC<-read.csv("Output1A/SelCoeff/SC.csv", stringsAsFactors = F, row.names = 1)
+SC<-read.csv("Output/SelCoeff/SC.csv", stringsAsFactors = F, row.names = 1)
 colnames(SC)[which(colnames(SC)=="EstSC")]<-"SC_original"
 sc<-merge(sc, SC[,c("pos","SC_original")], by="pos")
 
@@ -79,7 +79,7 @@ p2<-ggplot(scD[scD$SC=="Site-level",], aes(x=value))+ggtitle("Site-level mut rat
         scale_x_continuous(trans = 'log10',label=label_scientific2, limits = c(0.000001,.5))+xlab("selection coefficient")
 
 
-pdf("Output1A/SelCoeff_indivMutRates/SC_comparison_all.pdf", width = 4, height = 4)
+pdf("Output/SelCoeff_indivMutRates/SC_comparison_all.pdf", width = 4, height = 4)
 grid.arrange(p1,p2,nrow=2)
 dev.off()
 
@@ -118,7 +118,7 @@ ggplot(scdata,aes(x=base, y=S.C., fill=factor(type)))+geom_boxplot(outlier.alpha
         theme(legend.title = element_blank()) +theme(axis.text.x = element_text(size =10))+
         theme(axis.text.y = element_text(size =10), panel.grid.major.x=element_blank())+
         geom_vline(xintercept = c(1:3)+0.5, color="gray60")
-ggsave("Output1A/SelCoeff/SC.byNT.indivMutRates.pdf", width = 5,height = 4)
+ggsave("Output/SelCoeff/SC.byNT.indivMutRates.pdf", width = 5,height = 4)
 
 summary<-data.frame(nt=c("a","c","g","t"))
 summary$mean.inv[1]<-mean(sc$EstSC[sc$ref=="a"])
@@ -143,7 +143,7 @@ ggplot(summaryM, aes(x=nt, y=value, color=variable))+
         ylab("Mean selection coefficient")+xlab("")+
         scale_x_discrete(breaks=c("a","c","g","t"),labels=c(expression(A%->%G),expression(C%->%"T"),expression(G%->%A),expression("T"%->%C)))+
         theme(legend.title = element_blank())
-ggsave("Output1A/SelCoeff/Mean.SC_indivRatevs.SingleRate.comparison.pdf", width = 5,height = 3.5)        
+ggsave("Output/SelCoeff/Mean.SC_indivRatevs.SingleRate.comparison.pdf", width = 5,height = 3.5)        
 
  
 ## Add average:
@@ -165,7 +165,7 @@ ggplot()+
         theme(legend.title = element_blank()) +theme(axis.text.x = element_text(size =10))+
         theme(axis.text.y = element_text(size =10), panel.grid.major.x=element_blank())+
         geom_vline(xintercept = c(1:3)+0.5, color="gray60")
-ggsave("Output1A/SelCoeff/SC.byNT_withMean_indivMutRates.pdf", width = 5,height = 4)
+ggsave("Output/SelCoeff/SC.byNT_withMean_indivMutRates.pdf", width = 5,height = 4)
 
 ####
 ## wilcox test of SC by NT
@@ -200,5 +200,5 @@ for (i in 1:nrow(Ncomb)) {
 }   
 
 WilcoxTest.nt<-rbind(WilcoxTest.nt,WilcoxTest.nt2)
-write.csv(WilcoxTest.nt,"Output1A/SelCoeff/WilcoxTes_byNT_indivMutRates.csv")
+write.csv(WilcoxTest.nt,"Output/SelCoeff/WilcoxTes_byNT_indivMutRates.csv")
 

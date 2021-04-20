@@ -9,10 +9,10 @@ source("Rscripts/baseRscript.R")
 
 #SC<-list()
 #fnames<-c("Ts", "Ts_NA", "Ts_zero")
-mutrates<-read.csv("Output1A/Geller/Geller.MutRates.Summary_updated.csv", row.names = 1, stringsAsFactors = F)
+mutrates<-read.csv("Output/Geller/Geller.MutRates.Summary_updated.csv", row.names = 1, stringsAsFactors = F)
 
 
-df<-read.csv("Output1A/Mutfreq.filtered/Filtered.Ts.Q35.csv",stringsAsFactors = F,row.names = 1 )
+df<-read.csv("Output/Mutfreq.filtered/Filtered.Ts.Q35.csv",stringsAsFactors = F,row.names = 1 )
 df<-df[,c(1,197:203)]
         
 df$TSmutrate[df$ref=="a"]<-mutrates$MutRate[mutrates$Mutation=="AG"]
@@ -24,12 +24,12 @@ for (j in 1:nrow(df)){
         df$EstSC[j] <- EstimatedS(df$TSmutrate[j],df$mean[j])
 }
 df$EstSC<-as.numeric(df$EstSC)
-depth<-read.csv("Output1A/ReadDepth_sum.csv", stringsAsFactors = F, row.names = 1)
+depth<-read.csv("Output/ReadDepth_sum.csv", stringsAsFactors = F, row.names = 1)
 df<-merge(df, depth, by="pos")
 
-write.csv(df,"Output1A/SelCoeff/SC.csv")
+write.csv(df,"Output/SelCoeff/SC.csv")
 
-df<-read.csv("Output1A/SelCoeff/SC.csv", stringsAsFactors = F, row.names = 1)
+df<-read.csv("Output/SelCoeff/SC.csv", stringsAsFactors = F, row.names = 1)
 ### Wilcoxon Test on SC  (use mean SC)
 ## Use A & T only for CpG Analysis
 ty<-which(colnames(df)=="Type")
@@ -90,7 +90,7 @@ re4<-wilcox.test(nonsyn_allCpG,nonsyn_allnonCpG, alternative = "greater", paired
 wilcoxtest1$test[4]<-re4[[7]]
 wilcoxtest1$P.value[4]<-re4[[3]]
         
-write.csv(wilcoxtest1,"Output1A/SelCoeff/WilcoxonResults_by_Type.csv")
+write.csv(wilcoxtest1,"Output/SelCoeff/WilcoxonResults_by_Type.csv")
 
 Type.sc<-data.frame("mean"=matrix(nrow=9))
 for (i in 1:9){
@@ -98,7 +98,7 @@ for (i in 1:9){
         Type.sc$mean[i]<-mean(TypeList[[i]],na.rm=T)
         Type.sc$se[i]<-std.error(TypeList[[i]],na.rm=T)
 }
-write.csv(Type.sc,"Output1A/SelCoeff/SC_byType_Summary.csv")
+write.csv(Type.sc,"Output/SelCoeff/SC_byType_Summary.csv")
       
   
 ## Test on NT by NT
@@ -138,7 +138,7 @@ rownames(se_CpG)<-c("syn_cpg_se","nonsyn_cpg_se","stop_cpg_se")
 
 SCbyType<-rbind(S,se,S_nonCpG,se_nonCpG,S_CpG,se_CpG)
 SCbyType2<-data.frame(t(SCbyType))
-write.csv(SCbyType2,"Output1A/SelCoeff/SC_byNt_byType.csv")
+write.csv(SCbyType2,"Output/SelCoeff/SC_byNt_byType.csv")
 
 # Wilcoxin Test by nucleotide 
 nuc.sc<-data.frame("syn.cpg"=matrix(nrow=4))
@@ -213,13 +213,13 @@ else {  synnoncpg<-get(paste0("syn_",i,"_noncpg"))
         }
      k=k+1
 } 
-write.csv(WilcoxTest.nt.sc,"Output1A/SelCoeff/WilcoxTestResults_byNT.csv")
-write.csv(nuc.sc,"Output1A/SelCoeff/SC_Summary_byNT.csv")
+write.csv(WilcoxTest.nt.sc,"Output/SelCoeff/WilcoxTestResults_byNT.csv")
+write.csv(nuc.sc,"Output/SelCoeff/SC_Summary_byNT.csv")
 
 #####
 
 ## Wilcoxon test on SCs by gene 
-df<-read.csv("Output1A/SelCoeff/SC.csv", stringsAsFactors = F, row.names = 1)
+df<-read.csv("Output/SelCoeff/SC.csv", stringsAsFactors = F, row.names = 1)
 #coding regions only
 df<-df[df$pos>=342,]
 genes<-read.csv("Data/HCV_annotations2.csv",stringsAsFactors = F)
@@ -265,7 +265,7 @@ for (i in 1:nrow(Gcomb)) {
 }        
 
 WilcoxTest2.gene<-rbind(WilcoxTest2.gene,WilcoxTest2.gene2)
-write.csv(WilcoxTest2.gene,"Output1A/SelCoeff/SC_WilcoxTestResults_byGene.csv")
+write.csv(WilcoxTest2.gene,"Output/SelCoeff/SC_WilcoxTestResults_byGene.csv")
 
 
 #####
@@ -301,7 +301,7 @@ for (i in 1:nrow(Ncomb)) {
 }   
 
 WilcoxTest.nt<-rbind(WilcoxTest.nt,WilcoxTest.nt2)
-write.csv(WilcoxTest.nt,"Output1A/SelCoeff/SC_WilcoxTestResults_byNT.csv")
+write.csv(WilcoxTest.nt,"Output/SelCoeff/SC_WilcoxTestResults_byNT.csv")
 
 
 ####
@@ -348,7 +348,7 @@ for (f in 1:2){
         }   
         
         WilcoxTest.nt<-rbind(WilcoxTest.nt,WilcoxTest.nt2)
-        write.csv(WilcoxTest.nt,paste0("Output1A/SelCoeff/SC_WilcoxTestResults_byNT", fname,".csv"))
+        write.csv(WilcoxTest.nt,paste0("Output/SelCoeff/SC_WilcoxTestResults_byNT", fname,".csv"))
 }
 
 

@@ -1,12 +1,13 @@
-#Merge two files (mapped and unmapped CSVs), and convert frquency counts into mutation freqeunceis
+#Merge two freq. tables (mapped and unmapped CSVs) created in #2 for each sample,
+#and convert the frquency counts into mutation freqeunceis ('SeqFile')
 
 library(tidyverse)
 library(plyr)
 source("Rscripts/baseRscript.R")
 
-
-HCVFiles<-list.files("Output1A/CSV/",pattern="un.csv")
-MergeFiles<-list.files("Output1A/CSV/", pattern="me.csv")
+#List of csv files
+HCVFiles<-list.files("Output/CSV/",pattern="un.csv")
+MergeFiles<-list.files("Output/CSV/", pattern="me.csv")
 
 start<-264
 end<-8800
@@ -16,10 +17,10 @@ for (i in 1:length(MergeFiles)){
         print(i)
         id<-substr(paste(HCVFiles[i]),start=1,stop=7)
         print(id)
-        merge<-read.csv(paste("Output1A/CSV/",MergeFiles[i],sep=""))
+        merge<-read.csv(paste("Output/CSV/",MergeFiles[i],sep=""))
         merge<-merge[,-c(1,2,8,9)]
         colnames(merge)<-c("pos","mA","mC","mG","mT", "mDel","mIns")
-        unmerge<-read.csv(paste("Output1A/CSV/",HCVFiles[i],sep=""))
+        unmerge<-read.csv(paste("Output/CSV/",HCVFiles[i],sep=""))
         unmerge<-unmerge[,-c(1,2,8,9)]
         colnames(unmerge)<-c("pos","uA","uC","uG","uT", "uDel","uIns")
 
@@ -122,7 +123,7 @@ for (i in 1:length(MergeFiles)){
                 }
         }
         
-        write.csv(SeqData,paste0("Output1A/SeqDataQ35/SeqData_",id,".csv"))
+        write.csv(SeqData,paste0("Output/SeqDataQ35/SeqData_",id,".csv"))
 }
 
 

@@ -10,7 +10,7 @@ source("Rscripts/baseRscript.R")
 ####################
 
 #Read data file
-betar<-read.csv("Output1A/BetaReg/BetaReg.Data.Shape.csv", stringsAsFactors = F, row.names = 1)
+betar<-read.csv("Output/BetaReg/BetaReg.Data.Shape.csv", stringsAsFactors = F, row.names = 1)
 
 #Run Beta Regression
 mod.g1 <- betareg(mean ~ t + c + g + CpG  + t:Nonsyn + c:Nonsyn + g:Nonsyn + Nonsyn +bigAAChange + 
@@ -108,15 +108,15 @@ sum.g2<-summary(mod.g2)
 
 modcoef1<-sum.g1$coefficients
 coef1<-modcoef1[[1]]
-write.csv(coef1,"Output1A/GLM/BetaReg_mod.g1_Ts.Q35.csv")
+write.csv(coef1,"Output/GLM/BetaReg_mod.g1_Ts.Q35.csv")
 modcoef2<-sum.g2$coefficients
 coef2<-modcoef2[[1]]
-write.csv(coef2,"Output1A/BetaReg/BetaReg_mod.g2_Ts.Q35.csv")
+write.csv(coef2,"Output/BetaReg/BetaReg_mod.g2_Ts.Q35.csv")
 
 
 ### Calculate the effects:
 
-model<-read.csv("Output1A/BetaReg/BetaReg_mod.g2_Ts.Q35.csv", stringsAsFactors = F, row.names = 1)
+model<-read.csv("Output/BetaReg/BetaReg_mod.g2_Ts.Q35.csv", stringsAsFactors = F, row.names = 1)
 model$Effect<-''
 for (g in 1:length(row.names(model)) ){
         if (g==1){
@@ -128,4 +128,4 @@ for (g in 1:length(row.names(model)) ){
 }
 
 print(model)
-write.csv(model, "Output1A/BetaReg/BetaReg_BestModel.csv")
+write.csv(model, "Output/BetaReg/BetaReg_BestModel.csv")

@@ -19,14 +19,14 @@ col2_light1<-qualitative_hcl(6, palette="Set2")
 files<-c("Ts","Tv1.MutFreq","Tv2.MutFreq","Tvs.MutFreq","AllMutFreq")
 mf.files<-list()
 for (i in 1:5){
-        data<-read.csv(paste0("Output1A/MutFreq.filtered/Filtered.", files[i],".Q35.csv"),row.names = 1,stringsAsFactors = F)
+        data<-read.csv(paste0("Output/MutFreq.filtered/Filtered.", files[i],".Q35.csv"),row.names = 1,stringsAsFactors = F)
         assign(paste0(files[i]),data)
         mf.files[[i]]<-data
         names(mf.files)[i]<-files[i]
 }
 
 #summary of mut freq and se by mutation type
-TB3<-read.csv("Output1A/MutFreq.filtered/MF.Mean.SE.summary_updated.csv", stringsAsFactors = F, row.names = 1)
+TB3<-read.csv("Output/MutFreq.filtered/MF.Mean.SE.summary_updated.csv", stringsAsFactors = F, row.names = 1)
 
 
 ######
@@ -38,7 +38,7 @@ summary<-data.frame(Mutation=rep("Transition", times=4), Type=c("All", "Syn", "N
 summary$Mean<-TB3$mean[1:4]
 summary$SE<-TB3$se[1:4]
 
-summary2<-data.frame(Mutation=rep("Tranversion", times=4), Type=c("All", "Syn", "Nonsyn", "Nonsense"))
+summary2<-data.frame(Mutation=rep("Transversion", times=4), Type=c("All", "Syn", "Nonsyn", "Nonsense"))
 summary2$Mean[1]<-TB3$mean[TB3$type=="Tvs"]
 summary2$Mean[2:4]<-TB3$mean[15:17]
 summary2$SE[1]<-TB3$se[TB3$type=="Tvs"]
@@ -48,28 +48,33 @@ Summary$Type<-factor(Summary$Type, levels=c("All", "Syn","Nonsyn","Nonsense"))
 
 
 ggplot()+
-        geom_bar(data=Summary, aes(x=Type,y=Mean,fill=Mutation),position=position_dodge(.9), stat="identity",width=0.8)+
-        scale_fill_manual(values=paste0(colors2[c(5,6)],"E6"), labels=c("Transition","Transversion"))+
-        geom_errorbar(data=Summary, aes(x=Type,y=Mean,ymin=pmax(Mean-SE, 0) , ymax=Mean+SE,fill=Mutation), position=position_dodge(.9), width=.2, color="gray30")+
+        geom_rect(data=Summary[Summary$Mutation=="Transition",], aes(xmax=as.numeric(Type)-.35, xmin=as.numeric(Type)-.05, 
+                                        ymax=Mean, ymin=0), fill=paste0(colors2[5],"CC")) + 
+        scale_x_discrete(breaks=levels(Summary$Type))+    
+        geom_rect(data=Summary[Summary$Mutation=="Transversion",], aes(xmax=as.numeric(Type)+.05, xmin=as.numeric(Type)+.35, 
+                                                                 ymax=Mean, ymin=0), fill=paste0(colors2[6],"CC")) + 
+        scale_color_manual(values=paste0(colors2[c(5,6)],"E6"), labels=c("Transition","Transversion"))+
+        geom_point(data=Summary, aes(x=Type,y=Mean,fill=Mutation, color=Mutation),position=position_dodge(.78),size=0.5)+
+        geom_errorbar(data=Summary, aes(x=Type,y=Mean,ymin=pmax(Mean-SE, 0) , ymax=Mean+SE,fill=Mutation), position=position_dodge(.78), width=.2, color="gray30")+
         theme_linedraw()+
         theme(axis.title.x=element_blank())+ylab("Mean mutation frequency")+
-        ylim(0,0.01)+
+        scale_y_continuous(trans = 'log10', labels=label_scientific, limits=c(0.0001,0.01))+
         theme(axis.text.x = element_text(size=12, angle=45, hjust=1),axis.title.y = element_text(size=12))+
         geom_vline(xintercept = c(1:3)+0.5,  
                    color = "gray60", size=.4)+
         theme(panel.grid.major.x = element_blank(),
               panel.grid.major.y = element_line(linetype=2, colour="gray60"),
-              panel.grid.minor.y = element_blank(),
+              panel.grid.minor.y = element_line(linetype=2, colour="gray60"),
               legend.title = element_blank(),
               legend.text = element_text(size=11))
 
-ggsave("Output1A/MutFreq.filtered/MeanMF.byTyep.pdf", width = 5, height = 3.4)
+ggsave("Output/MutFreq.filtered/MeanMF.byTyep_log.pdf", width = 5, height = 3.4)
 
 
 ####################################
 #Plot summary of mutation frequency by type by nucleotide       
 
-HCVFiles3<-list.files("Output1A/Overview3/",pattern="overview3.csv")
+HCVFiles3<-list.files("Output/Overview3/",pattern="overview3.csv")
 s<-length(HCVFiles3)
 #exclude CpG creating mutations
 Ts2<-Ts[Ts$makesCpG==0,]
@@ -103,7 +108,7 @@ ggplot(mfdata2,aes(x=base, y=MF, fill=factor(type)))+geom_boxplot(outlier.alpha 
     geom_vline(xintercept = c(1:3)+0.5, color="gray60")+
     scale_x_discrete(breaks=c("A","T","C","G"),labels=c(expression(A%->%G),expression("T"%->%C),expression(C%->%"T"),expression(G%->%A)))
 
-ggsave("Output1A//MutFreq.filtered/MF.byNT._noCpG.pdf", width = 6,height = 4)
+ggsave("Output/MutFreq.filtered/MF.byNT._noCpG.pdf", width = 6,height = 4)
 
 
 ####### Create plots of mut frq by gene
@@ -120,7 +125,7 @@ genetable$gene<-gene.vector
 genes$Gene[genes$Gene=="NS1(P7)"]<-"NS1"
 genenames<-genes$Gene[2:12]
 
-depth<-read.csv("Output1A/ReadDepth_sum.csv",stringsAsFactors = F, row.names = 1)
+depth<-read.csv("Output/ReadDepth_sum.csv",stringsAsFactors = F, row.names = 1)
 
 mfs<-merge(Ts,depth, by="pos", all.x=T)
 
@@ -136,11 +141,19 @@ for (i in 1:11){
     meSE$SE[i]<-sqrt(mean(df$mean)*(1-mean(df$mean))/mean(df$Depth))
 }
 
+for (i in 1:11){
+    df<-mf1[mf1$gene==genenames[i],]
+    meSE$SE2[i]<-sqrt(mean(df$mean)*(1-mean(df$mean))/nrow(df))
+}
+
+
+
+
 sumG<-cbind(SumMFGenes, meSE$SE)
 colnames(sumG)[3]<-"SE"
 sumG$Gene<-factor(sumG$Gene, levels=genenames)
 
-write.csv(sumG, "Output1A/MutFreq.filtered/MF_Summary_Table.by.gene.csv")
+write.csv(sumG, "Output/MutFreq.filtered/MF_Summary_Table.by.gene.csv")
 
 #
 mf2<-mf1[,c("pos","mean","gene")]
@@ -159,7 +172,7 @@ ggplot(sumG, aes(x=Gene, y=Mean))+
     geom_vline(xintercept = c(1:10)+0.5,  
                color = "gray70", size=.5)+
     theme(axis.title.x=element_blank())
-ggsave(filename="Output1A/SummaryFig.Filtered/Ave.mf.byGene_updated.pdf", width = 7, height = 4)
+ggsave(filename="Output/SummaryFig.Filtered/Ave.mf.byGene_updated.pdf", width = 7, height = 4)
 
 
 ######## Plot mut freq by Gene and by type
@@ -182,7 +195,7 @@ for (i in 1:11){
 seSum<-rbind(SE2,SE1)
 sumG2<-merge(SumMFGenes, seSum, by=c("Gene","Type"))
 sumG2$Gene<-factor(sumG2$Gene, levels=genenames)
-write.csv(sumG2, "Output1A/MutFreq.filtered/MF_Summary_Table.by.gene.byType.csv")
+write.csv(sumG2, "Output/MutFreq.filtered/MF_Summary_Table.by.gene.byType.csv")
 
 
 ggplot(sumG2, aes(x=Gene, y=Mean, group=Type, color=Type))+
@@ -193,5 +206,5 @@ ggplot(sumG2, aes(x=Gene, y=Mean, group=Type, color=Type))+
     geom_vline(xintercept = c(1:10)+0.5,  
                color = "gray70", size=.5)+
     theme(axis.title.x=element_blank())
-ggsave(filename="Output1A/SummaryFig.Filtered/Ave.MF_by.gene_by.type_updated.pdf", width = 8.5, height = 5)
+ggsave(filename="Output/SummaryFig.Filtered/Ave.MF_by.gene_by.type_updated.pdf", width = 8.5, height = 5)
 

@@ -1,10 +1,10 @@
 source("Rscripts/baseRscript.R")
 require('nloptr')
 
-DF<-read.csv("Output1A/SelCoeff/SC.csv", row.names = 1, stringsAsFactors = F) 
+DF<-read.csv("Output/SelCoeff/SC.csv", row.names = 1, stringsAsFactors = F) 
 DF<-DF[DF$pos>=342,]
 
-geller<-read.csv("Output1A/Geller/Geller.MutRates.Summary_updated.csv", stringsAsFactors = F, row.names = 1)
+geller<-read.csv("Output/Geller/Geller.MutRates.Summary_updated.csv", stringsAsFactors = F, row.names = 1)
 geller<-geller[!(geller$Mutation=="AA"|geller$Mutation=="UU"|geller$Mutation=="CC"|geller$Mutation=="GG"),]
 geller$Mutation<-gsub("U","T",geller$Mutation)
 
@@ -63,7 +63,7 @@ for(k in 1:numreps){
         btstrp.vals[k,] <- c(runit.bs$shape, runit.bs$scale)
 }
 
-write.csv(btstrp.vals, "Output1A/SelfCoeff/Gamma.btstrp.values.csv")
+write.csv(btstrp.vals, "Output/SelfCoeff/Gamma.btstrp.values.csv")
 
 #Create confidence intervals
 shape.CI <- quantile(btstrp.vals[,1], c(.025, .975) )
@@ -72,4 +72,4 @@ scale.CI <- quantile(btstrp.vals[,2], c(.025, .975) )
 ptable[2:3, 2] <- round(scale.CI, 6)
 ptable[2:3, 3] <- round(shape.CI, 3)
 
-write.table(ptable, "Output1A/SelfCoeff/Gamma.parameters.csv")
+write.table(ptable, "Output/SelfCoeff/Gamma.parameters.csv")

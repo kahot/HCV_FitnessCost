@@ -1,22 +1,22 @@
-#Script to create an overview files with mutation frequency data and their associated features 
-#(mut freq/features based on Ref NT, Results=Overview2)
+#Script to create overview files with mutation frequency data and their associated features 
+#(mut freq/features based on the reference sequence (H77) are stored as "Overview2")
 
 library(dplyr)
 library(tidyverse)
 
 source("Rscripts/baseRscript.R")
-dir.create("Output1A/Overview2/")
+dir.create("Output/Overview2/")
 
 #Get the file names (SeqData files)
-HCVFiles_SeqData<-list.files("Output1A/SeqDataQ35/",pattern="SeqData")
+HCVFiles_SeqData<-list.files("Output/SeqDataQ35/",pattern="SeqData")
 
-#create a Overview file for each sample
+#create an Overview file for each sample
 Overview<-list()
 for (i in 1:length(HCVFiles_SeqData)){   
         #for (i in 1:1){
         id<-substr(paste(HCVFiles_SeqData[i]),start=9,stop=15)
         print(id)
-        OverviewDF<-read.csv(paste0("Output1A/SeqDataQ35/",HCVFiles_SeqData[i]),stringsAsFactors=FALSE)
+        OverviewDF<-read.csv(paste0("Output/SeqDataQ35/",HCVFiles_SeqData[i]),stringsAsFactors=FALSE)
         OverviewDF<-OverviewDF[,-1]
 
         ref<-read.dna("Data/HCVref.fasta", format = "fasta",as.character=TRUE)
@@ -189,7 +189,7 @@ for (i in 1:length(Overview)){
         }
         
                 
-        write.csv(OverviewDF,paste0("Output1A/Overview2/",id,"overview2.csv"))
+        write.csv(OverviewDF,paste0("Output/Overview2/",id,"overview2.csv"))
         
         Overview_summary[[i]]<-OverviewDF
         print(id)

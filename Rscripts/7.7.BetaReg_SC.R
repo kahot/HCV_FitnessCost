@@ -8,9 +8,9 @@ library(miscTools)
 source("Rscripts/baseRscript.R")
 
 ####################
-SC<-read.csv("Output1A/SelCoeff/SC.csv", stringsAsFactors = F,row.names = 1)
+SC<-read.csv("Output/SelCoeff/SC.csv", stringsAsFactors = F,row.names = 1)
 SC<-SC[,c("pos", "EstSC")]
-betar<-read.csv("Output1A/BetaReg/BetaReg.Data.Shape.csv", stringsAsFactors = F, row.names = 1)
+betar<-read.csv("Output/BetaReg/BetaReg.Data.Shape.csv", stringsAsFactors = F, row.names = 1)
 betaDF<-merge(betar, SC, by="pos")
 
 ################
@@ -71,6 +71,6 @@ sum.g2<-summary(mod.g2)
 
 modcoef2<-sum.g2$coefficients
 coef2<-modcoef2[[1]]
-write.csv(coef2,"Output1A/BetaReg/BetaReg_SC_best_model.csv")
+write.csv(coef2,"Output/BetaReg/BetaReg_SC_best_model.csv")
 
 

@@ -1,3 +1,5 @@
+# Examine 'conserved sites' vs. 'variable sites' across all sampeles in 1A samples
+
 library(plotrix)
 library(reshape)
 library(tidyverse)
@@ -38,16 +40,16 @@ for (i in 1:nrow(dt)){
 }
 
 dt2$Sum<-rowSums(dt2[,1:195])      
-write.csv(dt2, "Output1A/Identical_sites_matrix.csv")
+write.csv(dt2, "Output/Identical_sites_matrix.csv")
 
 ###
-dt2<-read.csv("Output1A/Identical_sites_matrix.csv", row.names = 1, stringsAsFactors = F)
+dt2<-read.csv("Output/Identical_sites_matrix.csv", row.names = 1, stringsAsFactors = F)
 same.sites<-which(dt2$Sum==195)
 
 ### Use filtered data first  ###
 
 # separate identical sites and non-identical sites
-Ts<-read.csv("Output1A/MutFreq.filtered/Filtered.Ts.Q35.csv",row.names = 1,stringsAsFactors = F)
+Ts<-read.csv("Output/MutFreq.filtered/Filtered.Ts.Q35.csv",row.names = 1,stringsAsFactors = F)
 Ts<-Ts[Ts$pos>=289& Ts$pos<=8613,]
 T_same<-Ts[same.sites,]
 T_diff<-Ts[-same.sites,]
@@ -71,7 +73,7 @@ GTest(nt[,2:3])
 
 
 ##ad SC
-SC<-read.csv("Output1A/SelCoeff/SC.csv", row.names = 1, stringsAsFactors = F)
+SC<-read.csv("Output/SelCoeff/SC.csv", row.names = 1, stringsAsFactors = F)
 
 SC<-SC[SC$pos>=289& SC$pos<=8613,]
 Ts_same<-SC[same.sites,]

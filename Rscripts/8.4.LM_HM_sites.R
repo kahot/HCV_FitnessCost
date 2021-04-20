@@ -1,3 +1,5 @@
+# Examine the Highly Mutable / Lower Mutable clusters identified in Geller et al's study
+
 library(ggplot2)
 library(colorspace)
 source("Rscripts/label_scientific.R")
@@ -5,7 +7,7 @@ source("Rscripts/label_scientific.R")
 colors2<-qualitative_hcl(6, palette="Dark3")
 source("Rscripts/baseRscript.R")
 
-mfs<-read.csv("Output1A/MutFreq.filtered/Filtered.Ts.Q35.csv",stringsAsFactors = F, row.names = 1)
+mfs<-read.csv("Output/MutFreq.filtered/Filtered.Ts.Q35.csv",stringsAsFactors = F, row.names = 1)
 mfs<-mfs[mfs$pos>341,]
 ### Plot mutation freq. across the genome based on the mutation types 
 
@@ -83,4 +85,4 @@ ggplot()+
         coord_cartesian(xlim = c(1, 19), clip = 'off') +
         theme(legend.justification = "top")
 
-ggsave("Output1A/SummaryFig/HM.LM.sites.boxplots.pdf", width = 6.5, height = 4)
+ggsave("Output/SummaryFig/HM.LM.sites.boxplots.pdf", width = 6.5, height = 4)

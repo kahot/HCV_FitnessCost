@@ -19,7 +19,7 @@ scColors2<-c("#EC4A4D","#0055EC")
 
 
 ###########
-df<-read.csv("Output1A/SelCoeff/SC.csv", stringsAsFactors = F, row.names = 1)
+df<-read.csv("Output/SelCoeff/SC.csv", stringsAsFactors = F, row.names = 1)
 #coding regions only
 df<-df[df$pos>=342,]
 
@@ -60,7 +60,7 @@ SCs$syn.roll50<-c(rep(NA, times=25),syn.roll50,c(rep(NA, times=24)))
 
 ylow1=0.00008
 yhigh=0.025
-pdf("Output1A/SelCoeff/SC_acrossGenome.pdf",width=14,height=5)
+pdf("Output/SelCoeff/SC_acrossGenome.pdf",width=14,height=5)
 plot(EstSC~pos, data=SCs,t="n",log='y',yaxt='n',xlab='Genome position',ylab="Estimated selection coefficient",
      ylim=c(ylow1,yhigh),xlim=c(265,8618))
 eaxis(side = 2, at = 10^((0):(-(5))), cex=2)

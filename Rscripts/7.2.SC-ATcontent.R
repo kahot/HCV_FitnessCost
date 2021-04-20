@@ -17,7 +17,7 @@ scaleFUN <- function(x) sprintf("%.2f", x)
 col2_light<-qualitative_hcl(6, palette="Set3")
 ###########
 
-df<-read.csv("Output1A/SelCoeff/SC.csv", stringsAsFactors = F, row.names = 1)
+df<-read.csv("Output/SelCoeff/SC.csv", stringsAsFactors = F, row.names = 1)
 #coding regions only
 df<-df[df$pos>=342,]
 
@@ -64,9 +64,9 @@ colnames(ATs)[1]<-"AT"
 
 SC_summary2<-merge(AveSC,SESC,by="gene")
 SC_summary2<-merge(SC_summary2,ATs,by="gene")
-write.csv(SC_summary2, "Output1A/SelCoeff/SC-AT-CpG_Summary_updated.csv")
+write.csv(SC_summary2, "Output/SelCoeff/SC-AT-CpG_Summary_updated.csv")
 
-#SC_summary2<-read.csv("Output1A/SelCoeff/SC-AT-CpG_Summary_updated.csv", stringsAsFactors = F, row.names = 1)
+#SC_summary2<-read.csv("Output/SelCoeff/SC-AT-CpG_Summary_updated.csv", stringsAsFactors = F, row.names = 1)
 SC_summary2$gene<-factor(SC_summary2$gene, levels=c("Core", "E1", "HVR1", "E2","NS1","NS2","NS3","NS4A","NS4B","NS5A","NS5B"))
 
 
@@ -89,7 +89,7 @@ ATplot<-ggplot(SC_summary2,aes(x=gene,y=AT))+
 
 plot_grid(scPlot, ATplot,nrow = 2, labels = c("", ""),
           rel_heights = c(1, 1))
-ggsave(filename="Output1A/SelCoeff/SC-AT.pdf",width =7, height =4.5)
+ggsave(filename="Output/SelCoeff/SC-AT.pdf",width =7, height =4.5)
 
 
 ## Correlation:

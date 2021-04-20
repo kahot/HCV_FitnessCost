@@ -13,7 +13,7 @@ source("Rscripts/baseRscript.R")
 source("Rscripts/label_scientific.R")
 ###########
 
-df<-read.csv("Output1A/SelCoeff/SC.csv", stringsAsFactors = F, row.names = 1)
+df<-read.csv("Output/SelCoeff/SC.csv", stringsAsFactors = F, row.names = 1)
 df<-df[df$pos>=342,]
 
 #### Calcualte the mean SC and GC_contents for each gene
@@ -92,4 +92,4 @@ G<-ggplot(dt2, aes(x=EstSC, fill=Type))+
 
 plot_grid(A,T_,C,G, nrow = 1, ncol=4, rel_widths=c(1,1,1,1.5))
 #grid.arrange(A,T_,C,G,  nrow = 1)
-ggsave("Output1A/SelCoeff/SC_DFEplot.pdf", width=9, height=2.5)
+ggsave("Output/SelCoeff/SC_DFEplot.pdf", width=9, height=2.5)

@@ -18,7 +18,7 @@ nucord <- c("a", "t", "c", "g")
 brform<-as.matrix(data.frame(a="",t="",c="",g="", Syn ="",Nonsyn="",Stop=""))
 nuc<-as.matrix(data.frame(a="",t="",c="",g=""))
 
-dat<-read.csv("Output1A/MutFreq.filtered/Filtered.Ts.Q35.csv",stringsAsFactors = F, row.names=1)
+dat<-read.csv("Output/MutFreq.filtered/Filtered.Ts.Q35.csv",stringsAsFactors = F, row.names=1)
 dat<-dat[dat$pos>=342,]
 dat1<-dat[,c("pos","makesCpG","bigAAChange","mean")]
 
@@ -35,7 +35,7 @@ for (i in 1:nrow(dat)){
 BetaRegData<-cbind(dat1$pos,brform[1:nrow(dat1),])
 BetaRegData<-cbind(BetaRegData,dat1[,2:4])
 colnames(BetaRegData)[9]<-"CpG"
-#write.csv(BetaRegData, "Output1A/BetaReg/BetaRegData_Ts_FilteredData.csv")
+#write.csv(BetaRegData, "Output/BetaReg/BetaRegData_Ts_FilteredData.csv")
 
 
 ### addd gene annotation info for all genes
@@ -64,11 +64,11 @@ for (i in 2:12){
 co<-which(colnames(betar)=="NS1(P7)" )
 colnames(betar)[co]<-"NS1"
 
-write.csv(betar,"Output1A/BetaReg/BetaRegFull.Ts.FilteredData.csv")
+write.csv(betar,"Output/BetaReg/BetaRegFull.Ts.FilteredData.csv")
 
 
 ## Add RNA structural information
-DF<-read.csv("Output1A/BetaReg/BetaRegFull.Ts.FilteredData.csv", stringsAsFactors = F, row.names = 1)
+DF<-read.csv("Output/BetaReg/BetaRegFull.Ts.FilteredData.csv", stringsAsFactors = F, row.names = 1)
 colnames(DF)[1]<-"pos"
 rna<-read.csv("Data/RNAStructure_Conserved2.csv", stringsAsFactors = F)
 rnaList<-list()
@@ -82,7 +82,7 @@ RnaShape<-data.frame(do.call(rbind,rnaList))
 DF<-merge(DF,RnaShape, by="pos", all.x = T)
 DF$Shape[is.na(DF$Shape)]<-0
 
-write.csv(DF, "Output1A/BetaReg/BetaReg.Data.Shape.csv")
+write.csv(DF, "Output/BetaReg/BetaReg.Data.Shape.csv")
 
 
 

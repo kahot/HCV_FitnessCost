@@ -4,12 +4,41 @@ library(purrr)
 library(colorspace)
 source("Rscripts/baseRscript.R")
 
-
-Ts<-read.csv("Output1A/MutFreq.filtered/Filtered.Ts.Q35.csv", row.names = 1, stringsAsFactors = F)
+### Test of mut freq between mutation types
+#1) transition mutations
+Ts<-read.csv("Output/MutFreq.filtered/Filtered.Ts.Q35.csv", row.names = 1, stringsAsFactors = F)
 Ts<-Ts[Ts$pos>=342, ]
+
+r1<-wilcox.test(Ts$mean[Ts$Type=="syn"], Ts$mean[Ts$Type=="nonsyn"], alternative = "greater", paired = FALSE) 
+r2<-wilcox.test(Ts$mean[Ts$Type=="nonsyn"], Ts$mean[Ts$Type=="stop"], alternative = "greater", paired = FALSE) 
+r1[[3]]  #P=0
+r2[[3]]  #P= 1.933446e-41
+ 
+#2) transversion mutations
+Tvs<-read.csv("Output/MutFreq.filtered/Filtered.Ts.Q35.csv", row.names = 1, stringsAsFactors = F)
+## 2.1) Summary Stats
+Tv1<-read.csv("Output/MutFreq.filtered/Filtered.Tv1.MutFreq.Q35.csv", row.names = 1, stringsAsFactors = F)
+Tv1<-Tv1[Tv1$pos>=342, ]
+Tv2<-read.csv("Output/MutFreq.filtered/Filtered.Tv2.MutFreq.Q35.csv", row.names = 1, stringsAsFactors = F)
+Tv2<-Tv2[Tv2$pos>=342, ]
+
+Syn<-c(Tv1$mean[Tv1$Type.tv1=="syn"],Tv2$mean[Tv2$Type.tv2=="syn"])
+Nonsyn <- c(Tv1$mean[Tv1$Type.tv1=="nonsyn"],Tv2$mean[Tv2$Type.tv2=="nonsyn"])
+Stop <- c(Tv1$mean[Tv1$Type.tv1=="stop"],Tv2$mean[Tv2$Type.tv2=="stop"])
+
+r1<-wilcox.test(Syn, Nonsyn, alternative = "greater", paired = FALSE) 
+r2<-wilcox.test(Nonsyn, Stop, alternative = "greater", paired = FALSE) 
+wilcox.test(Nonsyn, Stop, alternative = "less", paired = FALSE) 
+
+r1[[3]] #2.788528e-175
+r2[[3]] #1
+
+
+##############
+# Transition mutations: test by nucleotide and by gene
 Ts2<-Ts[Ts$makesCpG==0,]
 
-depth<-read.csv("Output1A/ReadDepth_sum.csv",stringsAsFactors = F, row.names = 1)
+depth<-read.csv("Output/ReadDepth_sum.csv",stringsAsFactors = F, row.names = 1)
 
 
 
@@ -50,7 +79,7 @@ for (f in 1:2){
         }   
         
         WilcoxTest.nt<-rbind(WilcoxTest.nt,WilcoxTest.nt2)
-        write.csv(WilcoxTest.nt, paste0("Output1A/SummaryStats/MF_WilcoxTestResults_byNT", fname,".csv"))
+        write.csv(WilcoxTest.nt, paste0("Output/SummaryStats/MF_WilcoxTestResults_byNT", fname,".csv"))
 }
 
 
@@ -87,7 +116,7 @@ for (i in 1:11) {
     WilcoxTest.gene$P.value[i]<-result[[3]]
 }   
 
-write.csv(WilcoxTest.gene,"Output1A/SummaryStats/MF_WilcoxTestResults_byGene.synvsNonsyn.csv")
+write.csv(WilcoxTest.gene,"Output/SummaryStats/MF_WilcoxTestResults_byGene.synvsNonsyn.csv")
 
 
 

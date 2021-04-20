@@ -11,7 +11,7 @@ color.genes<-qualitative_hcl(11, palette="Dark3")
 
 
 #Geller's in vitro mut freq
-dt2<-read.csv("Output1A/Geller/Geller_MutFrequency.csv", stringsAsFactors = F, row.names = 1)
+dt2<-read.csv("Output/Geller/Geller_MutFrequency.csv", stringsAsFactors = F, row.names = 1)
 dt2<-dt2[!is.na(dt2$mean),]
 
 transmf1<-list()
@@ -28,7 +28,7 @@ mfdata1<-do.call(rbind, transmf1)
 mfdata1$Study<-"In vitro"
 
 
-TS<-read.csv("Output1A/MutFreq.filtered/Filtered.Ts.Q35.csv",stringsAsFactors = F, row.names = 1)
+TS<-read.csv("Output/MutFreq.filtered/Filtered.Ts.Q35.csv",stringsAsFactors = F, row.names = 1)
 
 k=1
 transmf2<-list()
@@ -65,7 +65,7 @@ for (i in 1:nrow(tb)){
                 tb$SE[i]<-sqrt(m*(1-m)/l)
         }
 }
-write.csv(tb, "Output1A/MutFreq.filtered/Invitro.invivo.mf.summary.csv")
+write.csv(tb, "Output/MutFreq.filtered/Invitro.invivo.mf.summary.csv")
 
 
 
@@ -80,12 +80,12 @@ ggplot()+scale_y_continuous(trans = 'log10', labels=label_scientific)+
         guides(shape = guide_legend(override.aes = list(size = 7)))+
         geom_vline(xintercept = c(1:3)+0.5,  
                    color = "gray60", size=.4)
-ggsave(filename="Output1A/SummaryFig/Invivo.Invitro.comparison.pdf",width=6, height=4, units='in',device='pdf')
+ggsave(filename="Output/SummaryFig/Invivo.Invitro.comparison.pdf",width=6, height=4, units='in',device='pdf')
 
 
 ################
 #in vivo vs. in vitro by gene
-dt2<-read.csv("Output1A/Geller/Geller_MutFrequency.csv", stringsAsFactors = F, row.names = 1)
+dt2<-read.csv("Output/Geller/Geller_MutFrequency.csv", stringsAsFactors = F, row.names = 1)
 colnames(dt2)[1]<-"pos"
 
 genes<-read.csv("Data/HCV_annotations2.csv",stringsAsFactors = F)
@@ -142,4 +142,4 @@ ggplot()+
         theme(axis.text = element_text(size =11, color="black"), axis.title.y = element_text(size=12))+
         theme(legend.title = element_blank(), panel.grid.major.x = element_blank(), panel.grid.minor.x = element_blank())+
         geom_vline(xintercept = c(1:10)+0.5,  color = "gray60", size=.4)
-ggsave(filename="Output1A/SummaryFig/Invivo.Invitro.byGene.comparison.pdf",width=, height=4, units='in',device='pdf')
+ggsave(filename="Output/SummaryFig/Invivo.Invitro.byGene.comparison.pdf",width=, height=4, units='in',device='pdf')

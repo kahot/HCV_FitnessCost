@@ -1,3 +1,5 @@
+#Caluclate the diversity at each site and compare between-host and within-host.
+
 library(ggplot2)
 library(colorspace)
 library(purrr)
@@ -6,7 +8,7 @@ cols2<-c("#66CCEE","#EE667799" ,"#22883399")
 colors2<-qualitative_hcl(6, palette="Dark3")
 
 # mut freq
-mutfreq<-read.csv("Output1A/MutFreq.filtered/Filtered.Ts.Q35.csv", stringsAsFactors = F, row.names = 1)
+mutfreq<-read.csv("Output/MutFreq.filtered/Filtered.Ts.Q35.csv", stringsAsFactors = F, row.names = 1)
 
 #NCBI HCV1A sequences + 195 consensus (423 +195 = 618 sequences, coding sequnces only)
 entropy<-read.table(paste0("Data/1A_combind_Logo.txt"))
@@ -20,7 +22,7 @@ print(results)
 #-0.677469 
 #P < 2.2e-16
 
-pdf(paste0("Output1A/SummaryFig/Entropy-MF_618_new.pdf"))
+pdf(paste0("Output/SummaryFig/Entropy-MF_618_new.pdf"))
 plot(compare$mean,-(compare$Entropy), ylab="", xlab="",
      pch=16,col=colors2[5],cex=0.6, cex.axis=1.2)
 mtext("Within-host diversity (ave. mutation frequency)",1,2.2, cex=1.2)
@@ -40,7 +42,7 @@ print(results)
 #rho 
 #-0.7875385 
 
-pdf(paste0("Output1A/SummaryFig.Filtered/Entropy-MVF.618.pdf"))
+pdf(paste0("Output/SummaryFig.Filtered/Entropy-MVF.618.pdf"))
 plot(comparison1$mean,-(comparison1$Entropy), ylab="", xlab="",
      pch=16,col=colors2[5],cex=0.6, cex.axis=1.2)
 mtext("In vivo diversity (mean mutation frequency)",1,2.2, cex=1.2)

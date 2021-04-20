@@ -1,3 +1,5 @@
+#look at mutation frequencies and selection coefficients at known drug resistance sites
+
 library(tidyverse)
 source("Rscripts/baseRscript.R")
 colors=c("#44AA99","#0077BB","#CC6677" )
@@ -15,17 +17,17 @@ for (i in 1:nrow(DR)){
                 if (DR$extra[i]=="y") DR$ID[i]<- paste (DR$Name[i],DR$merged.pos[i],DR$Type[i], sep = ".")}
 }
 
-HCVFiles<-list.files("Output1A/Overview2/", pattern="overview2.csv")
+HCVFiles<-list.files("Output/Overview2/", pattern="overview2.csv")
 
 DR_mutfreq<-data.frame(ID=factor(DR$ID, levels=c(DR$ID)))
 Diff<-data.frame(ID=factor(DR$ID,levels=c(DR$ID)))
 diff.count<-list()
 
 for (i in 1:length(HCVFiles)){ 
-        df<-read.csv(paste0("Output1A/Overview2/",HCVFiles[i]),stringsAsFactors=FALSE, row.names = 1)
+        df<-read.csv(paste0("Output/Overview2/",HCVFiles[i]),stringsAsFactors=FALSE, row.names = 1)
         dname<-substr(paste(HCVFiles[i]),start=1,stop=7)
         dr<-DR
-        cname<-"pos.1A"
+        cname<-"pos."
         DRsites<-df[df$pos %in% dr[,cname],]
         
         #count the number of samples fixed with the RAVs
@@ -80,13 +82,13 @@ DR_diff<-Diff[order(Diff$ID),]
 DR_diff$NonNA_count<-apply(DR_mutfreq[,2:(s+1)],1, function(x) sum(!is.na(x)))
 DR_diff$total<-apply(DR_diff[2:(s+1)],1,sum, na.rm=T)
 DR_diff$Percent<-format(round(DR_diff$total/DR_diff$NonNA_count*100, 1), nsmall=1)
-write.csv(DR_diff, "Output1A/DrugRes/RAV.counts.MutFreq_summary.1A.csv")
-write.csv(DR_mutfreq, "Output1A/DrugRes/RAV.MutationFreq_summary.1A.csv")
+write.csv(DR_diff, "Output/DrugRes/RAV.counts.MutFreq_summary.1A.csv")
+write.csv(DR_mutfreq, "Output/DrugRes/RAV.MutationFreq_summary.1A.csv")
 
 
 ####  START here for plotting only ####
-DR_mutfreq<-read.csv("Output1A/DrugRes/RAV.MutationFreq_summary.1A.csv", stringsAsFactors = F, row.names = 1)
-DR_diff<-read.csv("Output1A/DrugRes/RAV.MutationFreq_summary_Diff.1A.csv", stringsAsFactors = F, row.names = 1)
+DR_mutfreq<-read.csv("Output/DrugRes/RAV.MutationFreq_summary.1A.csv", stringsAsFactors = F, row.names = 1)
+DR_diff<-read.csv("Output/DrugRes/RAV.MutationFreq_summary_Diff.1A.csv", stringsAsFactors = F, row.names = 1)
 
 ######
 s<-length(HCVFiles)
@@ -101,17 +103,17 @@ DR_mutfreq$NonNA_count<-apply(DR_mutfreq[,2:(s+1)],1, function(x) sum(!is.na(x))
 DR_mutfreq$Percent<-format(round(DR_mutfreq$Count/DR_mutfreq$NonNA_count*100, 1), nsmall=1)
 NatPrev<-DR_mutfreq[,c('ID','Count','Percent')]
 
-write.csv(NatPrev,"Output1A/DrugRes/RAV.NatPrevelence.count.1A.csv")
+write.csv(NatPrev,"Output/DrugRes/RAV.NatPrevelence.count.1A.csv")
 
 
 #####
 ## Calculate selection coefficients for RAV sites
 ## this inlucdes transversion so can't use the SCs summary
 
-HCVFiles3<-list.files("Output1A/Overview3/", pattern="overview3.csv")
+HCVFiles3<-list.files("Output/Overview3/", pattern="overview3.csv")
 
 #read the modified table of RAV info
-dr1a<-read.csv("Output1A/DrugRes/RAV_Table_updated.csv",stringsAsFactors = F)
+dr1a<-read.csv("Output/DrugRes/RAV_Table_updated.csv",stringsAsFactors = F)
 
 #create an id column
 for (i in 1:nrow(dr1a)){
@@ -126,7 +128,7 @@ for (i in 1:nrow(dr1a)){
 
 dr.mf2<-data.frame(ID=dr1a$ID)
 for (i in 1:length(HCVFiles3)){ 
-        df<-read.csv(paste0("Output1A/Overview3/",HCVFiles3[i]),stringsAsFactors=FALSE, row.names = 1)
+        df<-read.csv(paste0("Output/Overview3/",HCVFiles3[i]),stringsAsFactors=FALSE, row.names = 1)
         dname<-substr(paste(HCVFiles3[i]),start=1,stop=7)
         dr<-dr1a
         cname<-"pos.1A"
@@ -146,7 +148,7 @@ for (i in 1:length(HCVFiles3)){
         dr.mf2<-merge(dr.mf2,dr, by="ID")
 }
 
-write.csv(dr.mf2, "Output1A/DrugRes/RAV.MF_summary.1A.Filtered.csv")
+write.csv(dr.mf2, "Output/DrugRes/RAV.MF_summary.1A.Filtered.csv")
 
 
 dr.mf2$mean<-rowMeans(dr.mf2[,2:196],na.rm=T)
@@ -154,7 +156,7 @@ dr_sc<-dr.mf2[,c("ID","mean")]
 dr_sc<-merge(dr_sc, dr1a, by="ID")
 
 # attach the mut rates info:
-mutrates<-read.csv("Output1A/Geller/Geller.MutRates.Summary_updated.csv", row.names = 1, stringsAsFactors = F)
+mutrates<-read.csv("Output/Geller/Geller.MutRates.Summary_updated.csv", row.names = 1, stringsAsFactors = F)
 
 dr_sc$MR[dr_sc$ref=="c"&dr_sc$Type=="Ts"] <-mutrates$Mean[mutrates$Mutation=="CU"]
 dr_sc$MR[dr_sc$ref=="a"&dr_sc$Type=="Ts"] <-mutrates$Mean[mutrates$Mutation=="AG"]
@@ -177,14 +179,14 @@ for (j in 1:nrow(dr_sc)){
 dr_sc$EstSC<-as.numeric(dr_sc$EstSC)
 dr_sc$ID<-factor(dr_sc$ID, levels = c(DR$ID))
 dr_sc<-dr_sc[order(dr_sc$ID),]
-write.csv(dr_sc, "Output1A/DrugRes/RAV.SC_summary.1A.csv")
+write.csv(dr_sc, "Output/DrugRes/RAV.SC_summary.1A.csv")
 
 
 ### Create a figure ###
 
-dr_sc<-read.csv("Output1A/DrugRes/RAV.SC_summary.1A.csv")
+dr_sc<-read.csv("Output/DrugRes/RAV.SC_summary.1A.csv")
 
-pdf(paste0("Output1A/DrugRes/RAVs.sc.plots.pdf"), height = 11, width = 15.5)
+pdf(paste0("Output/DrugRes/RAVs.sc.plots.pdf"), height = 11, width = 15.5)
 layout(matrix(c(1,2), byrow = TRUE), heights=c(1,3))
 par(mar=c(0, 4, 4, .5))
 
@@ -287,12 +289,12 @@ cor.test(natprev$Percent, natprev$Percent_fixed,method = "spearman")
 
 ##### SC comparison between RAV sites vs. non-RAV sites
 #Read the summary RAV Sel coeff table
-dr_sc<-read.csv("Output1A/DrugRes/RAV.SC_summary.1A.csv", row.names = 1, stringsAsFactors = F)
+dr_sc<-read.csv("Output/DrugRes/RAV.SC_summary.1A.csv", row.names = 1, stringsAsFactors = F)
 drsites<-dr_sc[,c("ID","pos.1A","EstSC","Type","Gene","MR")]
 drsitesT<-dr_sc[dr_sc$Type=="Ts",]
 
 #get the non-DRsites sel coeff info
-sc<-read.csv("Output1A/SelCoeff/SC.csv", row.names = 1, stringsAsFactors = F)
+sc<-read.csv("Output/SelCoeff/SC.csv", row.names = 1, stringsAsFactors = F)
 sc<-sc[sc$pos>341,]
 
 ### addd gene annotation info for all genes
