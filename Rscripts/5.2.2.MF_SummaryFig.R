@@ -11,8 +11,7 @@ colors2<-qualitative_hcl(6, palette="Dark3")
 scaleFUN <- function(x) sprintf("%.2f", x)
 col2_light<-qualitative_hcl(6, palette="Set3")
 col2_light1<-qualitative_hcl(6, palette="Set2")
-
-
+cold<-qualitative_hcl(5, "Cold")
 
 
 #read in files
@@ -48,27 +47,84 @@ Summary$Type<-factor(Summary$Type, levels=c("All", "Syn","Nonsyn","Nonsense"))
 
 
 ggplot()+
-        geom_rect(data=Summary[Summary$Mutation=="Transition",], aes(xmax=as.numeric(Type)-.35, xmin=as.numeric(Type)-.05, 
-                                        ymax=Mean, ymin=0), fill=paste0(colors2[5],"CC")) + 
-        scale_x_discrete(breaks=levels(Summary$Type))+    
-        geom_rect(data=Summary[Summary$Mutation=="Transversion",], aes(xmax=as.numeric(Type)+.05, xmin=as.numeric(Type)+.35, 
-                                                                 ymax=Mean, ymin=0), fill=paste0(colors2[6],"CC")) + 
-        scale_color_manual(values=paste0(colors2[c(5,6)],"E6"), labels=c("Transition","Transversion"))+
-        geom_point(data=Summary, aes(x=Type,y=Mean,fill=Mutation, color=Mutation),position=position_dodge(.78),size=0.5)+
-        geom_errorbar(data=Summary, aes(x=Type,y=Mean,ymin=pmax(Mean-SE, 0) , ymax=Mean+SE,fill=Mutation), position=position_dodge(.78), width=.2, color="gray30")+
-        theme_linedraw()+
-        theme(axis.title.x=element_blank())+ylab("Mean mutation frequency")+
-        scale_y_continuous(trans = 'log10', labels=label_scientific, limits=c(0.0001,0.01))+
-        theme(axis.text.x = element_text(size=12, angle=45, hjust=1),axis.title.y = element_text(size=12))+
-        geom_vline(xintercept = c(1:3)+0.5,  
-                   color = "gray60", size=.4)+
-        theme(panel.grid.major.x = element_blank(),
-              panel.grid.major.y = element_line(linetype=2, colour="gray60"),
-              panel.grid.minor.y = element_line(linetype=2, colour="gray60"),
-              legend.title = element_blank(),
-              legend.text = element_text(size=11))
+    geom_rect(data=Summary[Summary$Mutation=="Transition",], aes(xmax=as.numeric(Type)-.35, xmin=as.numeric(Type)-.05, 
+                                    ymax=Mean, ymin=0), fill=paste0(colors2[5],"CC")) + 
+    scale_x_discrete(breaks=levels(Summary$Type))+    
+    geom_rect(data=Summary[Summary$Mutation=="Transversion",], aes(xmax=as.numeric(Type)+.05, xmin=as.numeric(Type)+.35, 
+                                                             ymax=Mean, ymin=0), fill=paste0(colors2[6],"CC")) + 
+    scale_color_manual(values=paste0(colors2[c(5,6)],"E6"))+
+    scale_fill_manual(values=paste0(colors2[c(5,6)],"E6"), labels=c("Transition","Transversion"))+
+    geom_point(data=Summary, aes(x=Type,y=Mean,fill=Mutation, color=Mutation),position=position_dodge(.78),size=0.5)+
+    geom_errorbar(data=Summary, aes(x=Type,y=Mean,ymin=pmax(Mean-SE, 0) , ymax=Mean+SE,fill=Mutation), position=position_dodge(.78), width=.2, color="gray30")+
+    theme_linedraw()+
+    theme(axis.title.x=element_blank())+ylab("Mean mutation frequency")+
+    scale_y_continuous(trans = 'log10', labels=label_scientific, limits=c(0.0001,0.015))+
+    theme(axis.text.x = element_text(size=12, angle=45, hjust=1),axis.title.y = element_text(size=12))+
+    geom_vline(xintercept = c(1:3)+0.5,  
+               color = "gray60", size=.4)+
+    theme(panel.grid.major.x = element_blank(),
+          panel.grid.major.y = element_line(linetype=2, colour="gray60"),
+          panel.grid.minor.y = element_line(linetype=2, colour="gray60"),
+          legend.title = element_blank(),
+          legend.text = element_text(size=11))+
+    annotate("segment", x = 0.8, xend = 1.2, y = 0.0115, yend = 0.0115, colour = "gray60", size=0.3)+
+    annotate("segment", x = 0.8, xend = 0.8, y = 0.0085, yend = 0.0115, colour = "gray60", size=0.3)+
+    annotate("segment", x = 1.2, xend = 1.2, y = 0.002, yend = 0.0115, colour = "gray60", size=0.3)+
+    annotate("text", x = 1, y = 0.0119, colour = "gray60", label="***", size=3)+
+    annotate("segment", x = 1.8, xend = 2.8, y = 0.0117, yend = 0.0117, colour = "#A5C0D9", size=0.3)+
+    annotate("segment", x = 1.8, xend = 1.8, y = 0.009, yend = 0.0117, colour  = "#A5C0D9", size=0.3)+
+    annotate("segment", x = 2.8, xend = 2.8, y = 0.005, yend = 0.0117, colour  = "#A5C0D9", size=0.3)+
+    annotate("text", x = 2.3, y = 0.01199, colour = "#A5C0D9", label="***", size=3)+
+    annotate("segment", x = 2.85, xend = 3.8, y = 0.0117, yend = 0.0117, colour = "#A5C0D9", size=0.3)+
+    annotate("segment", x = 2.85, xend = 2.85, y = 0.005, yend = 0.0117, colour = "#A5C0D9", size=0.3)+
+    annotate("segment", x = 3.8, xend = 3.8, y = 0.003, yend = 0.0117,   colour = "#A5C0D9", size=0.3)+
+    annotate("text", x = 3.3, y = 0.01199, colour = "#A5C0D9", label="***", size=3)+
+    annotate("segment", x = 2.2, xend = 3.2, y = 0.004, yend = 0.004, colour =  "#CEBCDE", size=0.3)+
+    annotate("segment", x = 2.2, xend = 2.2, y = 0.0015, yend = 0.004, colour = "#CEBCDE", size=0.3)+
+    annotate("segment", x = 3.2, xend = 3.2, y = 0.0005, yend = 0.004, colour = "#CEBCDE", size=0.3)+
+    annotate("text", x = 2.8, y = 0.00425, colour = "#CEBCDE", label="***", size=3)
+    
+ggsave("Output/MutFreq.filtered/MeanMF.byTyep_log_stats.pdf", width = 5, height = 3.4)
 
-ggsave("Output/MutFreq.filtered/MeanMF.byTyep_log.pdf", width = 5, height = 3.4)
+
+#Non-log
+ggplot()+
+    geom_bar(data=Summary, aes(x=Type,y=Mean,fill=Mutation),position=position_dodge(.9), stat="identity",width=0.8)+
+    scale_fill_manual(values=paste0(colors2[c(5,6)],"E6"), labels=c("Transition","Transversion"))+
+    geom_errorbar(data=Summary, aes(x=Type,y=Mean,ymin=pmax(Mean-SE, 0) , ymax=Mean+SE,fill=Mutation), position=position_dodge(.9), width=.2, color="gray30")+
+    theme_linedraw()+
+    theme(axis.title.x=element_blank())+ylab("Mean mutation frequency")+
+    ylim(0,0.01)+
+    theme(axis.text.x = element_text(size=12, angle=45, hjust=1),axis.title.y = element_text(size=12))+
+    geom_vline(xintercept = c(1:3)+0.5,  
+               color = "gray60", size=.4)+
+    theme(panel.grid.major.x = element_blank(),
+          panel.grid.major.y = element_line(linetype=2, colour="gray60"),
+          panel.grid.minor.y = element_blank(),
+          legend.title = element_blank(),
+          legend.text = element_text(size=11))+
+    annotate("segment", x = 0.8, xend = 1.2, y = 0.0085, yend = 0.0085, colour = "gray60", size=0.3)+
+    annotate("segment", x = 0.8, xend = 0.8, y = 0.006, yend = 0.0085, colour =  "gray60", size=0.3)+
+    annotate("segment", x = 1.2, xend = 1.2, y = 0.002, yend = 0.0085, colour =  "gray60", size=0.3)+
+    annotate("text", x = 1, y = 0.0087, colour = "gray60", label="***", size=3)+
+    annotate("segment", x = 1.8, xend = 2.75, y = 0.0095, yend = 0.0095, colour = "#A5C0D9", size=0.3)+
+    annotate("segment", x = 1.8, xend = 1.8, y = 0.0085,yend = 0.0095, colour =   "#A5C0D9", size=0.3)+
+    annotate("segment", x = 2.75, xend = 2.75, y = 0.005, yend = 0.0095, colour = "#A5C0D9", size=0.3)+
+    annotate("text", x = 2.3, y = 0.0097, colour = "#A5C0D9", label="***", size=3)+
+    annotate("segment", x = 2.85, xend = 3.75, y = 0.0095, yend = 0.0095, colour = "#A5C0D9", size=0.3)+
+    annotate("segment", x = 2.85, xend = 2.85, y = 0.005,  yend = 0.0095, colour = "#A5C0D9", size=0.3)+
+    annotate("segment", x = 3.75, xend = 3.75, y = 0.0026, yend = 0.0095, colour = "#A5C0D9", size=0.3)+
+    annotate("text", x = 3.3, y = 0.0097, colour = "#A5C0D9", label="***", size=3)+
+    annotate("segment", x = 2.25, xend = 3.2, y = 0.0036, yend = 0.0036, colour = "#CEBCDE", size=0.3)+
+    annotate("segment", x = 2.25, xend = 2.25, y = 0.0015, yend = 0.0036, colour = "#CEBCDE", size=0.3)+
+    annotate("segment", x = 3.2, xend = 3.2, y = 0.001, yend = 0.0036, colour = "#CEBCDE", size=0.3)+
+    annotate("text", x = 2.75, y = 0.0039, colour = "#CEBCDE", label="***", size=3)
+
+ggsave("Output/MutFreq.filtered/MeanMF.byTyep_stats.pdf", width = 5, height = 3.4)
+
+
+
+
 
 
 ####################################
@@ -156,7 +212,7 @@ sumG$Gene<-factor(sumG$Gene, levels=genenames)
 write.csv(sumG, "Output/MutFreq.filtered/MF_Summary_Table.by.gene.csv")
 
 #
-mf2<-mf1[,c("pos","mean","gene")]
+mf2<-mf1[,c("pos","mean","gene","Type")]
 mf2$gene<-factor(mf2$gene, levels=genenames)
 
 ybreaks<-c(seq(0.0005, 0.0009, by=0.0001),seq(0.001,0.009, by=0.001), seq(0.01, 0.04, by=0.01))
@@ -175,14 +231,13 @@ ggplot(sumG, aes(x=Gene, y=Mean))+
 ggsave(filename="Output/SummaryFig.Filtered/Ave.mf.byGene_updated.pdf", width = 7, height = 4)
 
 
-######## Plot mut freq by Gene and by type
+######## Plot mut freq by Gene and by type (Syn & nonsyn)
 #exclude stop mutations
 mf1<-mf1[mf1$Type!="stop",]
 
 SumMFGenes<-aggregate(mf1$mean,by=list(mf1$gene, mf1$Type),FUN=mean)
 colnames(SumMFGenes)<-c("Gene","Type","Mean")
 
-#scDF<-sc[,c("gene","EstSC","Depth")]
 SE1<-data.frame(Gene=genenames, Type="syn")
 SE2<-data.frame(Gene=genenames, Type="nonsyn")
 for (i in 1:11){
@@ -197,14 +252,44 @@ sumG2<-merge(SumMFGenes, seSum, by=c("Gene","Type"))
 sumG2$Gene<-factor(sumG2$Gene, levels=genenames)
 write.csv(sumG2, "Output/MutFreq.filtered/MF_Summary_Table.by.gene.byType.csv")
 
+#ggplot(sumG2, aes(x=Gene, y=Mean, group=Type, color=Type))+
+#    geom_point(position=position_dodge(width=0.3))+scale_color_manual(values=colors2[c(1,5)])+
+#    geom_errorbar(aes(ymin=Mean-SE, ymax=Mean+SE), width=.4, position=position_dodge(width=0.3))+
+#    theme_bw()+theme(axis.text=element_text(size=11), axis.title=element_text(size=13))+ylab("Mutation frequency")+
+#    theme(panel.grid.major.x=element_blank(),axis.title.y = element_text(size=13))+
+#    geom_vline(xintercept = c(1:10)+0.5,  
+#               color = "gray70", size=.5)+
+#    theme(axis.title.x=element_blank())
+#ggsave(filename="Output/SummaryFig.Filtered/Ave.MF_by.gene_by.type_updated.pdf", width = 8.5, height = 5)
 
-ggplot(sumG2, aes(x=Gene, y=Mean, group=Type, color=Type))+
-    geom_point(position=position_dodge(width=0.3))+scale_color_manual(values=colors2[c(1,5)])+
-    geom_errorbar(aes(ymin=Mean-SE, ymax=Mean+SE), width=.4, position=position_dodge(width=0.3))+
-    theme_bw()+theme(axis.text=element_text(size=11), axis.title=element_text(size=13))+ylab("Mutation frequency")+
-    theme(panel.grid.major.x=element_blank(),axis.title.y = element_text(size=13))+
+###make it into one figure
+mf1$gene<-factor(mf1$gene, levels=genenames)
+
+
+ggplot(sumG2, aes(x=Gene, y=Mean))+
+    scale_y_continuous(trans="log10",breaks = ybreaks,labels=ylabel)+
+    geom_point(data=mf1, aes(x=gene, y=mean, color=Type), position=position_jitterdodge(dodge.width=0.6, jitter.width=0.15),
+               alpha=0.1,stat = "identity", size=0.2)+
+    geom_point(data=sumG2, aes(x=Gene, y=Mean, group=Type, color=Type), color="gray60", position=position_dodge(width=0.6))+
+    geom_errorbar(data=sumG2, aes(ymin=Mean-SE, ymax=Mean+SE,color=Type), width=.6, position=position_dodge(width=0.6))+
+    theme_bw()+theme(axis.text=element_text(size=11), axis.title=element_text(size=13))+
+    ylab("Mutation frequency")+
+    theme(panel.grid.major.x=element_blank(),axis.title.y = element_text(size=13), panel.grid.minor.y = element_blank())+
     geom_vline(xintercept = c(1:10)+0.5,  
                color = "gray70", size=.5)+
-    theme(axis.title.x=element_blank())
-ggsave(filename="Output/SummaryFig.Filtered/Ave.MF_by.gene_by.type_updated.pdf", width = 8.5, height = 5)
+    theme(axis.title.x=element_blank())+
+    scale_color_manual(values=colors2[c(1,5)], labels=c("Nonsyn","Syn"))+
+    theme(legend.title=element_blank())+
+    guides(fill = guide_legend(override.aes = list(linetype = 0)),
+           color = guide_legend(override.aes = list(linetype = 0)))+
+    annotate("text", x=c(1,2,4:11), y=rep(0.035, times=10), label="*",size=4)
+
+ggsave("Output/MutFreq.filtered//MutFreq.byGene.byType2.pdf", width=8, height = 4)       
+
+
+
+
+
+
+
 

@@ -15,7 +15,6 @@ r1[[3]]  #P=0
 r2[[3]]  #P= 1.933446e-41
  
 #2) transversion mutations
-Tvs<-read.csv("Output/MutFreq.filtered/Filtered.Ts.Q35.csv", row.names = 1, stringsAsFactors = F)
 ## 2.1) Summary Stats
 Tv1<-read.csv("Output/MutFreq.filtered/Filtered.Tv1.MutFreq.Q35.csv", row.names = 1, stringsAsFactors = F)
 Tv1<-Tv1[Tv1$pos>=342, ]
@@ -32,6 +31,22 @@ wilcox.test(Nonsyn, Stop, alternative = "less", paired = FALSE)
 
 r1[[3]] #2.788528e-175
 r2[[3]] #1
+
+### Transition vs. transversion
+
+tvs<-c(Tv1$mean, Tv2$mean)
+
+r3<-wilcox.test(Ts$mean, tvs, alternative = "greater", paired = FALSE) 
+r3[[3]]
+#W = 124680000, p-value < 2.2e-16 (P=0)
+
+r4<-wilcox.test(Ts$mean[Ts$Type=="syn"], Syn, alternative = "greater", paired = FALSE) 
+r4[[3]]
+#W = 7866400, p-value < 2.2e-16 (P=0)
+r5<-wilcox.test(Ts$mean[Ts$Type=="nonsyn"], Nonsyn, alternative = "greater", paired = FALSE) 
+r5[[3]]
+#W = 62349000, p-value < 2.2e-16 (P=0)
+
 
 
 ##############
