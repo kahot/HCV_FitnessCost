@@ -43,8 +43,8 @@
 	• 8.4. Assess high-frequency and low-frequency regions identified in-vitro by Geller et al.
 	• 8.5. Assess highly conserved sites across populations
 	• 8.6. Assess correlation between within-host and between-host  
-	• 8.
-	• 8.
+	• 8.7. Estimate gamma parameters for DFE (Distribution of Fitness Effects)
+	• 8.8. Create a plot ordered by mut freq rankings
 
 ### Step 4. Selection coefficient (fitness cost) analysis (Scripts 7.1-7.7)
 	• Summarize, analyze, run stats, run beta regression and create figures on selection coefficients
