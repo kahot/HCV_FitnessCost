@@ -1,50 +1,42 @@
-#GLM/Beta regression preparation:
-library(tidyverse)
-library(zoo)
-library(purrr)
-library(MASS)
+# Run Beta regression
 library(betareg)
-library(miscTools)
-source("Rscripts/baseRscript.R")
-
-####################
 
 #Read data file
-betar<-read.csv("Output/BetaReg/BetaReg.Data.Shape.csv", stringsAsFactors = F, row.names = 1)
+betar<-read.csv("Output/BetaReg/BetaRegData.csv", stringsAsFactors = F, row.names = 1)
 
 #Run Beta Regression
-mod.g1 <- betareg(mean ~ t + c + g + CpG  + t:Nonsyn + c:Nonsyn + g:Nonsyn + Nonsyn +bigAAChange + 
+mod1 <- betareg(mean ~ t + c + g + CpG  + t:Nonsyn + c:Nonsyn + g:Nonsyn + Nonsyn +bigAAChange + 
                         Core +E1 +HVR1++E2 +NS1 +NS2+NS3+NS4A+NS5A+NS5B+Shape, data = betar[betar$Stop == 0,])
-AIC(mod.g1) #-75866.15
-summary(mod.g1)
+AIC(mod1) #-75864.86
+summary(mod1)
 #using the new data = same results!
 #              Estimate Std. Error  z value Pr(>|z|)    
-#(Intercept) -4.4737177  0.0229838 -194.647  < 2e-16 ***
-#t1           0.1157091  0.0208632    5.546 2.92e-08 ***
-#c1          -0.5323171  0.0205090  -25.955  < 2e-16 ***
-#g1          -0.7220995  0.0229500  -31.464  < 2e-16 ***
-#CpG         -0.0725060  0.0134435   -5.393 6.91e-08 ***
-#Nonsyn1     -0.7585679  0.0223505  -33.940  < 2e-16 ***
-#bigAAChange -0.1249080  0.0140548   -8.887  < 2e-16 ***
-#Core        -0.2152590  0.0240976   -8.933  < 2e-16 ***
-#E1           0.0390887  0.0227549    1.718   0.0858 .  
-#HVR1         0.2373264  0.0482918    4.914 8.90e-07 ***
-#E2           0.0859036  0.0197335    4.353 1.34e-05 ***
-#NS1          0.0714742  0.0330309    2.164   0.0305 *  
-#NS2          0.0911630  0.0218428    4.174 3.00e-05 ***
-#NS3          0.0035818  0.0179292    0.200   0.8417    
-#NS4A        -0.0542810  0.0372726   -1.456   0.1453    
-#NS5A        -0.0003067  0.0190949   -0.016   0.9872    
-#NS5B        -0.1615474  0.0207384   -7.790 6.71e-15 ***
-#t1:Nonsyn1  -0.1860138  0.0268162   -6.937 4.02e-12 ***
-#c1:Nonsyn1  -0.1431568  0.0277536   -5.158 2.49e-07 ***
-#g1:Nonsyn1   0.0929057  0.0286821    3.239   0.0012 ** 
-
+#(Intercept) -4.473459   0.022983 -194.643  < 2e-16 ***
+#t            0.115463   0.020862    5.535 3.12e-08 ***
+#c           -0.532611   0.020508  -25.970  < 2e-16 ***
+#g           -0.722394   0.022949  -31.478  < 2e-16 ***
+#CpG         -0.072600   0.013443   -5.401 6.64e-08 ***
+#Nonsyn      -0.758651   0.022349  -33.945  < 2e-16 ***
+#bigAAChange -0.124901   0.014054   -8.887  < 2e-16 ***
+#Core        -0.223432   0.025866   -8.638  < 2e-16 ***
+#E1           0.037405   0.022843    1.637  0.10154    
+#HVR1         0.237318   0.048289    4.914 8.90e-07 ***
+#E2           0.084702   0.019787    4.281 1.86e-05 ***
+#NS1          0.071473   0.033029    2.164  0.03047 *  
+#NS2          0.091152   0.021842    4.173 3.00e-05 ***
+#NS3          0.002000   0.018022    0.111  0.91164    
+#NS4A        -0.054267   0.037271   -1.456  0.14538    
+#NS5A        -0.002029   0.019209   -0.106  0.91590    
+#NS5B        -0.164191   0.020978   -7.827 5.00e-15 ***
+#Shape        0.012517   0.014699    0.852  0.39444    
+#t:Nonsyn    -0.185900   0.026814   -6.933 4.12e-12 ***
+#c:Nonsyn    -0.143042   0.027752   -5.154 2.55e-07 ***
+#g:Nonsyn     0.092746   0.028682    3.234  0.00122 **
 
 #remove the ns genes: NS3, and NS5A        
-mod.g2 <- update(mod.g1, ~. -NS3 - NS5A -Shape)
-AIC(mod.g2) # -75870.06  *** BEST MODEL
-summary(mod.g2)
+mod2 <- update(mod1, ~. -NS3 - NS5A -Shape)
+AIC(mod2) # -75870.06  *** BEST MODEL
+summary(mod2)
 #(Intercept) -4.47210    0.01836 -243.547  < 2e-16 ***
 #t            0.11574    0.02086    5.548 2.89e-08 ***
 #c           -0.53233    0.02050  -25.962  < 2e-16 ***
@@ -65,10 +57,10 @@ summary(mod.g2)
 #g:Nonsyn     0.09295    0.02868    3.241  0.00119 ** 
 
 
-#remove the ns genes: NS3, NS4A, and MS5A
-mod2 <- update(mod.g1, ~. -NS3 -NS4A - NS5A)
-AIC(mod2) #-75869.38
-summary(mod2)
+#remove NS4A
+mod3 <- update(mod2, ~.-NS4A)
+AIC(mod3) #-75869.38
+summary(mod3)
 #            Estimate Std. Error  z value Pr(>|z|)    
 #(Intercept) -4.47368    0.01834 -243.971  < 2e-16 ***
 #t            0.11525    0.02086    5.524 3.32e-08 ***
@@ -88,44 +80,33 @@ summary(mod2)
 #c:Nonsyn    -0.14228    0.02775   -5.127 2.94e-07 ***
 #g:Nonsyn     0.09324    0.02868    3.251  0.00115 ** 
 
-#Phi coefficients (precision model with identity link):
-#        Estimate Std. Error z value Pr(>|z|)    
-#(phi)  1145.80      18.81   60.92   <2e-16 ***
-#
-#Type of estimator: ML (maximum likelihood)
-#Log-likelihood: 3.795e+04 on 19 Df
-#Pseudo R-squared: 0.6125
-#Number of iterations: 34 (BFGS) + 3 (Fisher scoring)         
 
-AIC(mod.g1,mod.g2,mod2)
+AIC(mod1,mod2,mod3)
 #         df       AIC
-#mod.g1   21 -75866.15
+#mod.g1   22 -75864.86
 #mod.g2   19 -75870.06
 #mod.g2.2 18 -75869.38
 
-sum.g1<-summary(mod.g1)
-sum.g2<-summary(mod.g2)
-
-modcoef1<-sum.g1$coefficients
-coef1<-modcoef1[[1]]
-write.csv(coef1,"Output/GLM/BetaReg_mod.g1_Ts.Q35.csv")
-modcoef2<-sum.g2$coefficients
-coef2<-modcoef2[[1]]
-write.csv(coef2,"Output/BetaReg/BetaReg_mod.g2_Ts.Q35.csv")
+#Save the best model
+sum2<-summary(mod2)
+modcoef2<-sum2$coefficients
+model<-modcoef2[[1]]
+write.csv(model,"Output/BetaReg/BetaReg_MF_bestModel.csv")
 
 
 ### Calculate the effects:
+source("Rscripts/BetaEffectSize.R")
 
-model<-read.csv("Output/BetaReg/BetaReg_mod.g2_Ts.Q35.csv", stringsAsFactors = F, row.names = 1)
-model$Effect<-''
-for (g in 1:length(row.names(model)) ){
-        if (g==1){
-                model$Effect[1]<- exp(model[1,g])
-        }
-        else{
-                model$Effect[g]<- (((exp(model[1,1] + model$Estimate[g]) - exp(model[1,1])) /exp(model[1,1])))#add estimate % column
-        }
-}
+model<-read.csv("Output/BetaReg/BetaReg_MF_bestModel.csv", stringsAsFactors = F, row.names = 1)
+effect<-BetaEffectSizeDF(model)
+effect$factor<-rownames(effect)
+effect$factor[effect$factor=='t']<-"T"
+effect$factor[effect$factor=='c']<-"C"
+effect$factor[effect$factor=='g']<-"G"
+effect$factor[effect$factor=='t:Nonsyn']<-"T:Nonsyn"
+effect$factor[effect$factor=='c:Nonsyn']<-"C:Nonsyn"
+effect$factor[effect$factor=='g:Nonsyn']<-"G:Nonsyn"
+effect$factor[effect$factor=='bigAAChange']<-"AAChange"
 
-print(model)
-write.csv(model, "Output/BetaReg/BetaReg_BestModel.csv")
+write.csv(effect, "Output/BetaReg/BetaReg_MF_effectsize.csv", row.names = F)
+

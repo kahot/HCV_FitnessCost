@@ -122,7 +122,7 @@ ggplot(mutTs, aes(x=Mutation, y=MutRate))+
         theme_bw()+
         labs(x="")
 ggsave("Output/Geller/TsMutRates_SE.pdf", width = 4,height = 3)
-
+p<-list()
 ggplot(mutTs, aes(x=Mutation, y=MutRate))+
         geom_errorbar(data=mutTs, aes(ymin=pmax(MutRate-CI,0), ymax=MutRate+CI), width=.2, size=.5, color="#0000FF66")+
         scale_y_continuous(trans = 'log10', labels=label_scientific2)+
@@ -130,7 +130,7 @@ ggplot(mutTs, aes(x=Mutation, y=MutRate))+
         ylab("Estimated mutation rate ± 95% CI")+
         theme_bw()+theme(panel.grid.major.x = element_blank())+
         scale_x_discrete(labels=c(expression("A" %->% "G"),expression("C" %->% "U"),expression("G" %->% "A"),expression("U" %->% "C")))+ 
-        theme(axis.text.x=element_text(color=1)) 
+        theme(axis.text.x=element_text(color=1, size=12))+xlab('') 
 ggsave("Output/Geller/TsMutRates_95CI.pdf", width = 4,height = 3)
 
 MM2<-MM[MM$mutation=="AG"|MM$mutation=="GA"|MM$mutation=="CU"|MM$mutation=="UC",]
@@ -146,8 +146,10 @@ ggplot()+
         theme(axis.text.x =element_text(color=1, size=12))
 ggsave("Output/Geller/TsMutRates_CI_boxplot.pdf", width =4.5, heigh=4)
 
-
-
+library(gridExtra)
+pdf(paste0("Output/MutRates.pdf"), width = 10, height = 4)
+do.call(grid.arrange, c(p, ncol=2))
+dev.off()
 ggplot()+
         scale_y_continuous(trans = 'log10', labels=label_scientific2)+
         geom_boxplot(data=MM2, aes(x=mutation, y=mut.rate),outlier.alpha = 0.3, color="gray60",fill=paste0(colors2[5],"66"))+

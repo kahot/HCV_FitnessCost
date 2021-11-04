@@ -91,3 +91,44 @@ ggplot(scdata2,aes(x=base, y=S.C., fill=factor(type)))+geom_boxplot(outlier.alph
 
 ggsave("Output/SelCoeff/SC.byNT_noCpG.pdf", width = 6,height = 4)
 
+
+
+####
+### Plot the effect size ###
+effects<-read.csv("Output/BetaReg/BetaReg.effects.csv",stringsAsFactors = F)
+effects$factor<-factor(effects$factor, levels=effects$factor[1:17])
+
+effects$percent<-effects$percent*100
+effects$percent_SC<-effects$percent_SC*100
+
+
+##effect size for SC
+ggplot(effects, aes(factor,percent_SC)) +
+    geom_bar(stat="identity", color=colors2[5], fill=paste0(colors2[5],"CC"))+
+    theme_classic() +
+    theme(axis.text=element_text(size=13), axis.title.y=element_text(size=13))+
+    theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust=0.5))+
+    theme(panel.grid.major.y = element_line(color="gray80",linetype=5))+
+    labs(x="", y="Estimated effects (%)")
+
+ggsave("Output/SummaryFig.Filtered/BetaReg.effects.SC.pdf", width = 9, height = 6)
+
+
+##effect size for MF & SC
+colnames(effects)[4:5]<-c("MF","SC")
+effects2<-melt(effects[,c(2,4,5)], id.var=c("factor"))
+colnames(effects2)[2:3]<-c("Type","percent")
+
+ggplot(effects2, aes(factor,percent, group=Type, fill=Type)) +
+    scale_fill_manual(values=c(paste0(colors2[4],"99"),paste0(colors2[5],"CC")), labels=c("Mut freq","Sel coeff"))+
+    scale_color_manual(values=c(colors2[4], colors2[5]))+
+    geom_bar(stat="identity",color="gray",position=position_dodge(width=.5))+
+    theme_test() +
+    theme(axis.text=element_text(size=13), axis.title.y=element_text(size=13))+
+    theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust=0.5))+
+    theme(panel.grid.major.y = element_line(color="gray80",linetype=5))+
+    labs(x="", y="Estimated effects (%)")+
+    theme(legend.title = element_blank())
+
+ggsave("Output/SummaryFig.Filtered/BetaReg.effects.MF-SC2.pdf", width = 9, height = 5)
+
