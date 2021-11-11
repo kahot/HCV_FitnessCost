@@ -152,6 +152,10 @@ write.csv(WilcoxTest.gene,"Output/MutFreq/WilcoxonResults_byGene.csv")
 #hvr<-WilcoxTest.gene[WilcoxTest.gene$gene1=="HVR1"|WilcoxTest.gene$gene2=="HVR1",]
 #core<-WilcoxTest.gene[WilcoxTest.gene$gene1=="Core"|WilcoxTest.gene$gene2=="Core",]
 
+# Create a mean mf by gene table
+gene.sum<-data.frame(aggregate(Ts[,"mean"], by=list(Ts$gene), mean, na.rm=T))
+
+
 
 # Test syn vs. nonsyn mutations in each gene  
 Gcomb<-t(combn(genenames,2))

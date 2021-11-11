@@ -160,7 +160,7 @@ r1[[3]]  #P=0.02269177
 ######
 ######
 #Calculate CI
-#Use SE and using z-score (alpha=0.95)
+#Using SE and z-score (alpha=0.95)
 TB3$CI_up  <-TB3[,"mean"]+TB3[,"se"]*1.96
 TB3$CI_down<-TB3[,"mean"]-TB3[,"se"]*1.96
 TB3$CI<-TB3[,"se"]*1.96

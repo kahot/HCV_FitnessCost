@@ -1,11 +1,7 @@
 #Beta regression preparation:
-#library(tidyverse)
-#library(zoo)
-#library(purrr)
 library(DataCombine)
 library(miscTools)
 library(caret)
-#source("Rscripts/baseRscript.R")
 
 #### For preparing BetaReg data formatting
 

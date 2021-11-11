@@ -1,33 +1,38 @@
 #look at mutation frequencies and selection coefficients at known drug resistance sites
 
 library(tidyverse)
+library(colorspace)
 source("Rscripts/baseRscript.R")
 colors=c("#44AA99","#0077BB","#CC6677" )
+colors2<-qualitative_hcl(6, palette="Dark3")
+
+
 
 ####### START ####
 #read the modified table of RAV info
-DR<-read.csv("Data/RAV_Table_updated.csv",stringsAsFactors = F)
+DR<-read.csv("Data/RAV_Table.csv",stringsAsFactors = F)
 #create an id column
 for (i in 1:nrow(DR)){
         if (DR$Need_both[i]=="y") { 
-                if (DR$extra[i]=="n") DR$ID[i]<- paste0(DR$Name[i],'.',DR$merged.pos[i])
-                if (DR$extra[i]=="y") DR$ID[i]<- paste (DR$Name[i],DR$merged.pos[i],DR$Type[i], sep = ".")}
+                if (DR$extra[i]=="n") DR$ID[i]<- paste0(DR$Name[i],'.',DR$pos[i])
+                if (DR$extra[i]=="y") DR$ID[i]<- paste (DR$Name[i],DR$pos[i],DR$Type[i], sep = ".")}
         if (DR$Need_both[i]=="n") { 
                 if (DR$extra[i]=="n") DR$ID[i]<-DR$Name[i]
-                if (DR$extra[i]=="y") DR$ID[i]<- paste (DR$Name[i],DR$merged.pos[i],DR$Type[i], sep = ".")}
+                if (DR$extra[i]=="y") DR$ID[i]<- paste (DR$Name[i],DR$pos[i],DR$Type[i], sep = ".")}
 }
 
+
+#Find the freq at RAV sites 
 HCVFiles<-list.files("Output/Overview2/", pattern="overview2.csv")
 
 DR_mutfreq<-data.frame(ID=factor(DR$ID, levels=c(DR$ID)))
 Diff<-data.frame(ID=factor(DR$ID,levels=c(DR$ID)))
 diff.count<-list()
-
 for (i in 1:length(HCVFiles)){ 
         df<-read.csv(paste0("Output/Overview2/",HCVFiles[i]),stringsAsFactors=FALSE, row.names = 1)
         dname<-substr(paste(HCVFiles[i]),start=1,stop=7)
         dr<-DR
-        cname<-"pos."
+        cname<-"pos"
         DRsites<-df[df$pos %in% dr[,cname],]
         
         #count the number of samples fixed with the RAVs
@@ -73,24 +78,23 @@ for (i in 1:length(HCVFiles)){
 }
 
 DR.mutated.counts<-do.call(rbind,diff.count)
-
 DR_mutfreq<-DR_mutfreq[order(DR_mutfreq$ID),]
 DR_diff<-Diff[order(Diff$ID),]
 
 #count the number of patients fixed with RAV (%)
 #count the number of non-NA per RAV
-DR_diff$NonNA_count<-apply(DR_mutfreq[,2:(s+1)],1, function(x) sum(!is.na(x)))
-DR_diff$total<-apply(DR_diff[2:(s+1)],1,sum, na.rm=T)
+DR_diff$NonNA_count<-apply(DR_mutfreq[,2:196],1, function(x) sum(!is.na(x)))
+DR_diff$total<-apply(DR_diff[2:196],1,sum, na.rm=T)
 DR_diff$Percent<-format(round(DR_diff$total/DR_diff$NonNA_count*100, 1), nsmall=1)
-write.csv(DR_diff, "Output/DrugRes/RAV.counts.MutFreq_summary.1A.csv")
-write.csv(DR_mutfreq, "Output/DrugRes/RAV.MutationFreq_summary.1A.csv")
+write.csv(DR_diff, "Output/DrugRes/RAV.counts.MutFreq_summary.csv")
+write.csv(DR_mutfreq, "Output/DrugRes/RAV.MutationFreq_summary.csv")
 
 
-####  START here for plotting only ####
-DR_mutfreq<-read.csv("Output/DrugRes/RAV.MutationFreq_summary.1A.csv", stringsAsFactors = F, row.names = 1)
-DR_diff<-read.csv("Output/DrugRes/RAV.MutationFreq_summary_Diff.1A.csv", stringsAsFactors = F, row.names = 1)
+#Create a plot
+#DR_mutfreq<-read.csv("Output/DrugRes/RAV.MutationFreq_summary.1A.csv", stringsAsFactors = F, row.names = 1)
+#DR_diff<-read.csv("Output/DrugRes/RAV.MutationFreq_summary_Diff.1A.csv", stringsAsFactors = F, row.names = 1)
 
-######
+#
 s<-length(HCVFiles)
 ns3n <-nrow(DR[DR$Gene=="NS3",])
 ns5an<-nrow(DR[DR$Gene=="NS5A",])
@@ -103,36 +107,22 @@ DR_mutfreq$NonNA_count<-apply(DR_mutfreq[,2:(s+1)],1, function(x) sum(!is.na(x))
 DR_mutfreq$Percent<-format(round(DR_mutfreq$Count/DR_mutfreq$NonNA_count*100, 1), nsmall=1)
 NatPrev<-DR_mutfreq[,c('ID','Count','Percent')]
 
-write.csv(NatPrev,"Output/DrugRes/RAV.NatPrevelence.count.1A.csv")
+write.csv(NatPrev,"Output/DrugRes/RAV.NatPrevelence.count.csv")
 
 
 #####
 ## Calculate selection coefficients for RAV sites
-## this inlucdes transversion so can't use the SCs summary
+## this includes transversion so can't use the SCs summary
 
 HCVFiles3<-list.files("Output/Overview3/", pattern="overview3.csv")
 
-#read the modified table of RAV info
-dr1a<-read.csv("Output/DrugRes/RAV_Table_updated.csv",stringsAsFactors = F)
-
-#create an id column
-for (i in 1:nrow(dr1a)){
-        if (dr1a$Need_both[i]=="y") { 
-                if (dr1a$extra[i]=="n") dr1a$ID[i]<- paste0(dr1a$Name[i],'.',dr1a$merged.pos[i])
-                if (dr1a$extra[i]=="y") dr1a$ID[i]<- paste (dr1a$Name[i],dr1a$merged.pos[i],dr1a$Type[i], sep = ".")}
-        if (dr1a$Need_both[i]=="n") { 
-                if (dr1a$extra[i]=="n") dr1a$ID[i]<-dr1a$Name[i]
-                if (dr1a$extra[i]=="y") dr1a$ID[i]<- paste (dr1a$Name[i],dr1a$merged.pos[i],dr1a$Type[i], sep = ".")}
-}
-
-
-dr.mf2<-data.frame(ID=dr1a$ID)
+dr.mf2<-data.frame(ID=DR$ID)
 for (i in 1:length(HCVFiles3)){ 
         df<-read.csv(paste0("Output/Overview3/",HCVFiles3[i]),stringsAsFactors=FALSE, row.names = 1)
         dname<-substr(paste(HCVFiles3[i]),start=1,stop=7)
-        dr<-dr1a
-        cname<-"pos.1A"
-        DRsites<-df[df$pos %in% dr[,cname],]
+        dr<-DR
+        cname<-"pos"
+        DRsites<-df[df$pos %in% dr$pos,]
         
         #obtain the mutation freq.
         dr$freq<-""
@@ -148,52 +138,50 @@ for (i in 1:length(HCVFiles3)){
         dr.mf2<-merge(dr.mf2,dr, by="ID")
 }
 
-write.csv(dr.mf2, "Output/DrugRes/RAV.MF_summary.1A.Filtered.csv")
-
+#write.csv(dr.mf2, "Output/DrugRes/RAV.MF_summary.Filtered.csv")
 
 dr.mf2$mean<-rowMeans(dr.mf2[,2:196],na.rm=T)
 dr_sc<-dr.mf2[,c("ID","mean")]
-dr_sc<-merge(dr_sc, dr1a, by="ID")
+dr_sc<-merge(dr_sc, DR, by="ID")
 
 # attach the mut rates info:
 mutrates<-read.csv("Output/Geller/Geller.MutRates.Summary_updated.csv", row.names = 1, stringsAsFactors = F)
 
-dr_sc$MR[dr_sc$ref=="c"&dr_sc$Type=="Ts"] <-mutrates$Mean[mutrates$Mutation=="CU"]
-dr_sc$MR[dr_sc$ref=="a"&dr_sc$Type=="Ts"] <-mutrates$Mean[mutrates$Mutation=="AG"]
-dr_sc$MR[dr_sc$ref=="g"&dr_sc$Type=="Ts"] <-mutrates$Mean[mutrates$Mutation=="GA"]
-dr_sc$MR[dr_sc$ref=="t"&dr_sc$Type=="Ts"] <-mutrates$Mean[mutrates$Mutation=="UC"]
-dr_sc$MR[dr_sc$ref=="a"&dr_sc$Type=="Tv1"]<-mutrates$Mean[mutrates$Mutation=="AC"]
-dr_sc$MR[dr_sc$ref=="c"&dr_sc$Type=="Tv1"]<-mutrates$Mean[mutrates$Mutation=="CA"]
-dr_sc$MR[dr_sc$ref=="g"&dr_sc$Type=="Tv1"]<-mutrates$Mean[mutrates$Mutation=="GC"]
-dr_sc$MR[dr_sc$ref=="t"&dr_sc$Type=="Tv1"]<-mutrates$Mean[mutrates$Mutation=="UA"]
-dr_sc$MR[dr_sc$ref=="a"&dr_sc$Type=="Tv2"]<-mutrates$Mean[mutrates$Mutation=="AU"]
-dr_sc$MR[dr_sc$ref=="c"&dr_sc$Type=="Tv2"]<-mutrates$Mean[mutrates$Mutation=="CG"]
-dr_sc$MR[dr_sc$ref=="g"&dr_sc$Type=="Tv2"]<-mutrates$Mean[mutrates$Mutation=="GU"]
-dr_sc$MR[dr_sc$ref=="t"&dr_sc$Type=="Tv2"]<-mutrates$Mean[mutrates$Mutation=="UG"]
+dr_sc$MR[dr_sc$ref=="c"&dr_sc$Type=="Ts"] <-mutrates$MutRate[mutrates$Mutation=="CU"]
+dr_sc$MR[dr_sc$ref=="a"&dr_sc$Type=="Ts"] <-mutrates$MutRate[mutrates$Mutation=="AG"]
+dr_sc$MR[dr_sc$ref=="g"&dr_sc$Type=="Ts"] <-mutrates$MutRate[mutrates$Mutation=="GA"]
+dr_sc$MR[dr_sc$ref=="t"&dr_sc$Type=="Ts"] <-mutrates$MutRate[mutrates$Mutation=="UC"]
+dr_sc$MR[dr_sc$ref=="a"&dr_sc$Type=="Tv1"]<-mutrates$MutRate[mutrates$Mutation=="AC"]
+dr_sc$MR[dr_sc$ref=="c"&dr_sc$Type=="Tv1"]<-mutrates$MutRate[mutrates$Mutation=="CA"]
+dr_sc$MR[dr_sc$ref=="g"&dr_sc$Type=="Tv1"]<-mutrates$MutRate[mutrates$Mutation=="GC"]
+dr_sc$MR[dr_sc$ref=="t"&dr_sc$Type=="Tv1"]<-mutrates$MutRate[mutrates$Mutation=="UA"]
+dr_sc$MR[dr_sc$ref=="a"&dr_sc$Type=="Tv2"]<-mutrates$MutRate[mutrates$Mutation=="AU"]
+dr_sc$MR[dr_sc$ref=="c"&dr_sc$Type=="Tv2"]<-mutrates$MutRate[mutrates$Mutation=="CG"]
+dr_sc$MR[dr_sc$ref=="g"&dr_sc$Type=="Tv2"]<-mutrates$MutRate[mutrates$Mutation=="GU"]
+dr_sc$MR[dr_sc$ref=="t"&dr_sc$Type=="Tv2"]<-mutrates$MutRate[mutrates$Mutation=="UG"]
 
 
 dr_sc$EstSC<-""
 for (j in 1:nrow(dr_sc)){
-        dr_sc$EstSC[j] <- EstimatedS(dr_sc$MR[j],dr_sc$mean[j])
+        dr_sc$EstSC[j] <- EstimatedS(dr_sc$MR[j],drv_sc$mean[j])
 }
 dr_sc$EstSC<-as.numeric(dr_sc$EstSC)
 dr_sc$ID<-factor(dr_sc$ID, levels = c(DR$ID))
 dr_sc<-dr_sc[order(dr_sc$ID),]
-write.csv(dr_sc, "Output/DrugRes/RAV.SC_summary.1A.csv")
+write.csv(dr_sc, "Output/DrugRes/RAV.SC_summary.csv")
 
 
 ### Create a figure ###
+#dr_sc<-read.csv("Output/DrugRes/RAV.SC_summary.1A.csv")
 
-dr_sc<-read.csv("Output/DrugRes/RAV.SC_summary.1A.csv")
-
-pdf(paste0("Output/DrugRes/RAVs.sc.plots.pdf"), height = 11, width = 15.5)
+pdf(paste0("Output/DrugRes/RAVs.sc.plots4.pdf"), height = 10.5, width = 14.5)
 layout(matrix(c(1,2), byrow = TRUE), heights=c(1,3))
-par(mar=c(0, 4, 4, .5))
+par(mar=c(0, 5, 4, 5))
 
 genesDF<-data.frame("name"= c("NS3","NS5A","NS5B"), "Begin"= c(1,ns3n+1,(ns3n+ns5an+1)),"End"= c(ns3n,(ns3n+ns5an),nrow(DR_mutfreq)))
 
 ymin1=-4
-plot(0, type = "n", xlim = c(1, nrow(dr_sc)), ylim = c(ymin1, -1), axes = FALSE, ylab = "Cost", xlab = "")
+plot(0, type = "n", xlim = c(1, nrow(dr_sc)), ylim = c(ymin1, -1), axes = FALSE, ylab = "Cost", xlab = "",cex.lab=1.2)
 axis(side = 2, at = seq(-1, ymin1, by=-1), labels = expression(10^-1, 10^-2, 10^-3, 10^-4), las = 2)
 abline(v=c((0:nrow(dr_sc))+0.5), col="gray60", lty=1, lwd=.1)
 #abline(h=-4, col="gray50")
@@ -208,9 +196,10 @@ for (i in 1:nrow(dr_sc)){
 abline(v=ns3n+.5,col='gray50', lwd=3)
 abline(v=ns3n+ns5an+.5,col='gray50', lwd=3 )
 
-par(mar=c(6, 4, 4, .5))
+par(mar=c(6, 5, 4, 5))
 ymin <- -5
-plot(0, type = "n", xlim = c(1, nrow(DR_mutfreq)), ylim = c(ymin, 0), axes = FALSE, ylab = "Frequency of resistance-assocaited variants",xlab = "")
+plot(0, type = "n", xlim = c(1, nrow(DR_mutfreq)), ylim = c(ymin, 0), axes = FALSE, 
+     ylab = "Frequency of resistance-assocaited variants",xlab = "",cex.lab=1.2)
 axis(side = 2, at = seq(0, ymin, by=-1), labels = expression(10^0, 10^-1, 10^-2, 10^-3, 10^-4,10^-5), las = 2)
 n<-seq(1, by = 2, len = (nrow(DR_mutfreq)/2))
 
@@ -240,20 +229,21 @@ for (i in 1:nrow(DR_mutfreq)){
 # add % of fixed samples
 for (i in 1:nrow(DR)){
         if (DR$Type[i]=='Ts') mtext(side = 3, at = i, text = paste(DR_diff$Percent[i]), padj=0, las=2, cex = .8)
-        if (DR$Type[i]=='Tv1'|DR$Type[i]=='Tv2')  mtext(side = 3, at = i, text = paste(DR_diff$Percent[i]), las=2,  padj=0, cex = .8, col="#9437FF")
+        if (DR$Type[i]=='Tv1'|DR$Type[i]=='Tv2')  mtext(side = 3, at = i, text = paste(DR_diff$Percent[i]), las=2,  padj=0, cex = .8, col="orange4")
 }
-
+mtext("% Fixed samples", side=3, line=2.2, at=88, cex=1, adj=0)
+mtext("% Observed", side=3, line=0.2, at=88, cex=1, adj=0)
 
 #add IDs
 for (i in 1:nrow(DR)){
         if (DR$Type[i]=='Ts') mtext(side = 1, at = i, text = paste(dr$ID[i]), las=2, padj=0, cex = .8)
-        if (DR$Type[i]=='Tv1'|DR$Type[i]=='Tv2')  mtext(side = 1, at = i, text = paste(dr$ID[i]), las=2, padj=0, cex = .8, col="#9437FF")
+        if (DR$Type[i]=='Tv1'|DR$Type[i]=='Tv2')  mtext(side = 1, at = i, text = paste(dr$ID[i]), las=2, padj=0, cex = .8, col="orange4")
 }
 
 #add % of samples with RAV observed 
 for (i in 1:nrow(DR)){
         if (DR$Type[i]=='Ts') mtext(side = 3, at = i, line=2, text = paste(NatPrev$Percent[i]), las=2, padj=0, cex = .8)
-        if (DR$Type[i]=='Tv1'|DR$Type[i]=='Tv2')  mtext(side = 3, at = i, line=2, text = paste(NatPrev$Percent[i]), las=2, padj=0, cex = .8, col="#9437FF")
+        if (DR$Type[i]=='Tv1'|DR$Type[i]=='Tv2')  mtext(side = 3, at = i, line=2, text = paste(NatPrev$Percent[i]), las=2, padj=0, cex = .8, col="orange4")
 }
 abline(v=ns3n+.5,col='gray50', lwd=3)
 abline(v=ns3n+ns5an+.5,col='gray50', lwd=3 )
@@ -265,6 +255,8 @@ text(ns3n+ns5an-ns5an/2+.5,-5.08,paste0(genesDF$name[2]),col="black", cex=.8)
 rect(ns3n+ns5an+.5,-5,nrow(dr)+.5,-5.19,density = NULL, angle = 45,col="white",border =colors[3])
 text(nrow(dr)-(nrow(dr)-ns3n-ns5an)/2+.5,-5.08,paste0(genesDF$name[3]),col="black", cex=.8)
 
+mtext("Transition", side=1, line=0, at=88, cex=1, adj=0)
+mtext("Transversion", side=1, line=1, at=88, cex=1, col="orange4",adj=0)
 dev.off()
 
 ## Natural Prevelence vs. fixed observations

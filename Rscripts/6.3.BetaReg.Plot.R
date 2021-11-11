@@ -1,12 +1,8 @@
-# run BetaReg first (11.1 & 11.2)
-#library(plotrix)
-#library(sfsmisc)
+# Run BetaReg first (6.2)
 library(colorspace)
 library(reshape2)
 library(ggplot2)
-#source("Rscripts/baseRscript.R")
 source("Rscripts/BetaRegPlotFunction.R")
-
 colors2<-qualitative_hcl(6, palette="Dark3")
 
 # Read the mut freq. data

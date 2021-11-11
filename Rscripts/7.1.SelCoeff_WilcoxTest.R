@@ -5,10 +5,9 @@
 #library(tidyverse)
 #library(ggthemes)
 #library(sfsmisc)
-source("Rscripts/baseRscript.R")
+#source("Rscripts/baseRscript.R")
 source("Rscripts/Pcorrection.R")
-#SC<-list()
-#fnames<-c("Ts", "Ts_NA", "Ts_zero")
+
 mutrates<-read.csv("Output/Geller/Geller.MutRates.Summary_updated.csv", row.names = 1, stringsAsFactors = F)
 
 
@@ -25,13 +24,13 @@ for (j in 1:nrow(df)){
 }
 df$EstSC<-as.numeric(df$EstSC)
 
+
 #Estimate CI for SC
 
 reads<-read.csv("Output/ReadDepth_mean.csv",stringsAsFactors = F, row.names = 1)
 
 df<-df[df$pos>341&df$pos<8575,]
 reads<-reads[reads$pos>341&reads$pos<8575,]
-df$reads<-
 se<-data.frame(pos=df$pos)
 df$se<-sqrt(df$EstSC*(1-df$EstSC)/reads$Depth)
 df$CI<-1.96*df$se

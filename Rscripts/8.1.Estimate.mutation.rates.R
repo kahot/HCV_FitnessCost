@@ -1,21 +1,13 @@
-library(tidyverse)
-library(zoo)
+#Estimate mutation rates using nonsense mutations
 library(ggplot2)
-library(reshape)
-library(ggpubr)
-library(ggthemes)
-library(sfsmisc)
+library(reshape2)
 library(colorspace)
 source("Rscripts/label_scientific.R")
 source("Rscripts/baseRscript.R")
-
 colors2<-qualitative_hcl(6, palette="Dark3")
-col2_light<-qualitative_hcl(6, palette="Set3")
-div.colors<-c(colors2[1],col2_light[1],colors2[3],col2_light[3],colors2[5],col2_light[5])
-color.genes<-qualitative_hcl(11, palette="Dark3")
 
 
-TS<-read.csv("Output/MutFreq.filtered/Filtered.Ts.Q35.csv",stringsAsFactors = F, row.names = 1)
+TS<-read.csv("Output/MutFreq/Filtered.Ts.Q35.csv",stringsAsFactors = F, row.names = 1)
 stops<-TS[TS$Type=="stop",]
 #transition rates (only c and g are present)
 stopC<-stops[stops$ref =="c",]
@@ -27,8 +19,8 @@ mean(stopG$mean) #0.001915474
 mean(stopC$mean) #0.002165682
 
 
-Tv1<-read.csv("Output/MutFreq.filtered/Filtered.Tv1.MutFreq.Q35.csv",stringsAsFactors = F, row.names = 1)
-Tv2<-read.csv("Output/MutFreq.filtered/Filtered.Tv2.MutFreq.Q35.csv",stringsAsFactors = F, row.names = 1)
+Tv1<-read.csv("Output/MutFreq/Filtered.Tv1.Q35.csv",stringsAsFactors = F, row.names = 1)
+Tv2<-read.csv("Output/MutFreq/Filtered.Tv2.Q35.csv",stringsAsFactors = F, row.names = 1)
 
 stopTv1<-Tv1[Tv1$Type.tv1=="stop",]
 stopTv2<-Tv2[Tv2$Type.tv2=="stop",]
@@ -82,15 +74,16 @@ Mutrates$mutation<-factor(Mutrates$mutation, levels=paste0(Mutrates$mutation))
 
 MutratesM<-melt(Mutrates)
 ggplot(MutratesM, aes(x= mutation, y=value, color=variable ))+
-        geom_point(size=2)+
+        geom_point(size=2.4)+
         scale_y_continuous(trans = "log",labels=label_scientific, breaks=c(10^-7, 10^-6,10^-5, 10^-4, 10^-3))+
-        scale_color_manual(values=colors2[c(1,4)])+
+        scale_color_manual(values=colors2[c(1,4)], labels=c("In vivo", "In vitro"))+
         theme_bw()+
         ylab("Mutation rate")+xlab('Mutation')+
         theme(legend.title = element_blank(), panel.grid.minor.y  = element_blank())+
         scale_x_discrete(breaks=c("CG","GC","CA","TA","GT","TG","AT","AC","GA","CT","TC","AG"),labels=c(expression(C%->%G),expression(G%->%C),expression(C%->%A),expression("T"%->%A),
                                               expression(G%->%"T"),expression("T"%->%G),expression(A%->%"T"),expression(A%->%C),expression(G%->%A),expression(C%->%"T"), expression("T"%->%C), expression(A%->%G)))+
-        theme(axis.text.x = element_text(angle = 90))
+        theme(axis.text.x = element_text(angle = 90), panel.grid.major.x = element_blank())+
+        geom_vline(xintercept = 1:11+0.5, color="gray70", size=0.1)
 ggsave("Output/SummaryFig/Estimated_MutRates_invivo-invitro.pdf", width = 6, height = 4)
 
 
@@ -104,6 +97,7 @@ colnames(mrates2)[2:3]<-c("In vivo", "In vitro")
 
 ggplot(mrates2, aes(x=`In vivo`, y=`In vitro`))+
         geom_point(size=2, color=colors2[5])+
-        theme_bw()+
-        geom_smooth(method='lm', formula= y~x, se=F, lwd=.2, color="gray50")
+        theme_classic()+
+        geom_smooth(method='lm', formula= y~x, se=F, lwd=.1, color="gray60")+
+        annotate("text", x=0.0003, y=0.000004, label="rho = 0.79*", size=3.3)
 ggsave("Output/SummaryFig/Invivo.Invtro.Mutation.rates.correlation.pdf", width = 4.5, height = 4)
