@@ -20,13 +20,14 @@ ggplot(data=feSC,aes(x=Feature,y=Importance*100))+
     geom_bar(stat="identity", color=colors2[5], fill=paste0(colors2[5],"66"))+
     #geom_bar(stat="identity", color=feacol[1], fill=paste0(feacol[1],"66"))+
     theme_bw()+ylab("Importance %")+
-    ggtitle("Regression")+
+    ggtitle("Selection coefficients")+
     theme(axis.text.x = element_text(angle=90, hjust=1),axis.title.x = element_blank())
 #ggsave("Output/ML/SC_Regression_all.pdf", width = 10, height = 3)
 
 
 #top20
 feSC20<-feSC[1:20,]
+feSC20$Feature
 xlab<-c("Nonsyn","AAChange", "Nonsense","G", "Core","Nonpolar AA", "NS5B","HVR1","V-ogAA","W-ogAA","A",
         "NS1","E2","NS2","T","makesGpC","V-MutAA","NS5A", "makesCpA","A-ogAA")
 p1<-ggplot(data=feSC20,aes(x=Feature,y=Importance*100))+
@@ -64,7 +65,7 @@ feMF$Feature<-factor(feMF$Feature, levels=paste(feMF$Feature))
 ggplot(data=feMF,aes(x=Feature,y=Importance*100))+
     geom_bar(stat="identity", color="darkgreen", fill=cols.60[4])+
     theme_bw()+ylab("mportance %")+
-    ggtitle("Regression")+
+    ggtitle("Mutation frequency")+
     theme(axis.text.x = element_text(angle=90, hjust=1),axis.title.x = element_blank())
 #ggsave("Output/ML/Regression_MF_all.pdf", width = 10, height = 3)
 
@@ -79,7 +80,7 @@ p2<-ggplot(data=feMF20,aes(x=Feature,y=Importance*100))+
     ggtitle("Mutation frequency")+
     ylim(0,60)+
     theme(axis.text.x = element_text(angle=90, hjust=1), axis.title.x = element_blank(), panel.grid.major.x = element_blank())+
-    annotate('text', x=18, y=57, size=3.5, label=paste("R^2 = 0.597"))
+    annotate('text', x=18, y=57, size=3.5, label=paste("R^2 = 0.597"))+
     scale_x_discrete(labels=xlabel)
 
 #top8
@@ -110,7 +111,6 @@ sccol<-c("#7071FF", "#3F4CE1")
 fe<-feSC20[,1:2]
 colnames(fe)[2]<-"SC" 
 comm<-merge(fe, feMF20[,1:2], by="Feature")
-#comm2<-merge(fe, feSC20[,1:2], by="Feature", all=T)
 colnames(comm)[3]<-"MF"
 
 comm<-comm[order(comm$SC, decreasing = T),]
@@ -130,4 +130,3 @@ ggplot(data=commM,aes(x=Feature,y=Importance*100, color=Model, fill=Model))+
     theme(legend.position = "none") 
 ggsave("Output/ML/Feature_importance_common15.pdf", width = 6, height = 4)
 
-comm10<-melt(comm[])

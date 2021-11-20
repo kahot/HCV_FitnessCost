@@ -1,6 +1,6 @@
 #Estimate the parameters for Distribuion of Fitness Effects (DFE)
 source("Rscripts/baseRscript.R")
-require('nloptr')
+library('nloptr')
 
 DF<-read.csv("Output/SelCoeff/SC.csv", row.names = 1, stringsAsFactors = F) 
 DF<-DF[DF$pos>=342,]

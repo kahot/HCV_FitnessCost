@@ -1,4 +1,5 @@
-#result=glm or betareg result (the output of betareg())
+# Calculate the effect sizes from beta regression results
+# 'result' = betareg result (the output of betareg(), e.g. mod1)
 BetaEffectSize<-function(result){
         res<-summary(result)
         model<-data.frame(res$coefficients[[1]])
@@ -25,21 +26,3 @@ BetaEffectSize<-function(result){
         return(model)
 }
 
-
-
-BetaEffectSize2<-function(result){
-        res<-summary(result)
-        model<-data.frame(res$coefficients[[1]])
-        model$EstValue<-''
-        model$Effect<-''
-        for (i in 1:length(row.names(model)) ){
-                if (i==1) {model$EstValue[1]<- exp(model[1,i])
-                model$Effect[1]<-0}
-                
-                else{   model$EstValue[i]<-exp(model[1,1] + model$Estimate[i])
-                model$Effect[i]<- (((exp(model[1,1] + model$Estimate[i]) - exp(model[1,1])) /exp(model[1,1]))) }
-        }
-        
-        model$factor<-rownames(model)
-        return(model)
-}

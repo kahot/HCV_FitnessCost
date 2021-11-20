@@ -67,12 +67,12 @@ TMutFreq$keep0.5<-((TMutFreq$sum)/s)>=0.5
 TMutFreq$keep0.3<-((TMutFreq$sum)/s)>=(1/3)
 
         #how many sites?
-        sum(TMutFreq$keep0.5==T) #7472
-        sum(TMutFreq$keep0.3==T) #8037
+        sum(TMutFreq$keep0.5==T) #7481
+        sum(TMutFreq$keep0.3==T) #8035
         
         #what % of sites are REMOVED?
-        1-sum(TMutFreq$keep0.5==T)/nrow(TMutFreq) #0.1247511
-        1-sum(TMutFreq$keep0.3==T)/nrow(TMutFreq) #0.05856858
+        1-sum(TMutFreq$keep0.5==T)/nrow(TMutFreq) #0.1236968
+        1-sum(TMutFreq$keep0.3==T)/nrow(TMutFreq) #0.05880286
         
 #create a vector of positions to keep  : >1/3 for now
 Keep<-data.frame(TMutFreq$pos[TMutFreq$keep0.3==T])

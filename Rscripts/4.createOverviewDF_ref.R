@@ -23,7 +23,6 @@ for (i in 1:length(HCVFiles_SeqData)){
         OverviewDF<-read.csv(paste0("Output/SeqData/",HCVFiles_SeqData[i]),stringsAsFactors=FALSE)
         OverviewDF<-OverviewDF[,-1]
 
-        
         TypeOfSite<-c()
         TypeOfSite.tv1<-c()
         TypeOfSite.tv2<-c()

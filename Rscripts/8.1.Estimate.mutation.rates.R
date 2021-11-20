@@ -1,5 +1,4 @@
 #Estimate mutation rates using nonsense mutations
-library(ggplot2)
 library(reshape2)
 library(colorspace)
 source("Rscripts/label_scientific.R")
