@@ -40,8 +40,8 @@ makePlotAll <- function(main){
         axislabs <- c(expression("A" %->% "G"), expression("T" %->% "C"), expression("C" %->% "T"), expression("G" %->% "A"))
         axis(1, at = 1:4, axislabs, cex=.5)
         eaxis(2, at = 10^c(-1*(0:4)))
-        axis(2, at = 10^(-3.4), label = c("0"), las = 2)
-        axis.break(2, 2*10^-(3.65),style="slash")
+        #axis(2, at = 10^(-3.4), label = c("0"), las = 2)
+        #axis.break(2, 2*10^-(3.65),style="slash")
         
 }
 

@@ -1,8 +1,7 @@
-# Read BAM files in and convert them to frequency tables using Rsamtools
-
+# Read BAM files and convert them to frequency tables using Rsamtools
+#Bam files are available at figshare.com/articles/dataset/HCV_Bam_Files/13239491
 library(Rsamtools)
 library(stringr)
-
 source("Rscripts/pileupFreq.R")
 
 #List of bam files to be processed:

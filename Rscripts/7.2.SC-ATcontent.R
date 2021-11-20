@@ -1,10 +1,7 @@
 #Check the AT contents vs. SC values
-
-library(ggplot2)
 library(reshape2)
 library(colorspace)
 library(cowplot)
-
 source("Rscripts/baseRscript.R")
 source("Rscripts/label_scientific.R")
 
@@ -38,6 +35,7 @@ colnames(AveSC)<-c("gene","SC")
 se<-aggregate(sc$se,by=list(sc$gene), mean, na.rm = TRUE)
 colnames(se)<-c("gene","SE")
 AveSC$SE<-se$SE
+AveSC$CI<-AveSC$SE*1.96
 
 #AT content of each genes:
 ATcontents<-list()
@@ -54,7 +52,7 @@ ATs$gene<-rownames(ATs)
 colnames(ATs)[1]<-"AT"
 
 SC_summary<-merge(AveSC,ATs,by="gene")
-write.csv(SC_summary2, "Output/SelCoeff/SC-AT-Summary.csv")
+write.csv(SC_summary, "Output/SelCoeff/SC-AT-Summary.csv")
 
 SC_summary$gene<-factor(SC_summary$gene, levels=c("Core", "E1", "HVR1", "E2","NS1","NS2","NS3","NS4A","NS4B","NS5A","NS5B"))
 

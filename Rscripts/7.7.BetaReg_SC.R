@@ -1,4 +1,4 @@
-# Bta regression on Selection Coefficients
+# Beta regression on Selection Coefficients
 library(betareg)
 library(colorspace)
 library(reshape2)
@@ -10,7 +10,6 @@ col2_light<-qualitative_hcl(6, palette="Set3")
 
 sccol<-c("#7071FF", "#3F4CE1")
 
-#hcl_palettes("qualitative", plot = TRUE)
 
 # Read the data
 SC<-read.csv("Output/SelCoeff/SC.csv", stringsAsFactors = F,row.names = 1)

@@ -1,14 +1,14 @@
-# Create mutation frequency summary datatbles and estimate SE/CI
+# Create mutation frequency summary data frames and estimate SEs/CIs
 
 #Read the filtered overview files
-Files<-list.files("Output/Overview3/",pattern="overview3.csv")
+Files<-list.files("Output/OverviewF/",pattern="overviewF.csv")
 Overviews<-list()
 for (i in 1:length(Files)){ 
-        overviews2<-read.csv(paste0("Output/Overview3/",Files[i]),stringsAsFactors=FALSE, row.names=1)
+        overviews2<-read.csv(paste0("Output/OverviewF/",Files[i]),stringsAsFactors=FALSE, row.names=1)
         Overviews[[i]]<-overviews2
         names(Overviews)[i]<-substr(paste(Files[i]),start=1,stop=7)
 }
-
+trans<-sapply(Overviews,"[[","freq.Ts.ref")
 #Create summary data frames
 Ts<-data.frame(sapply(Overviews,"[[","freq.Ts.ref"))
 Tv1<-data.frame(sapply(Overviews,"[[","freq.transv1.ref") )
@@ -24,7 +24,7 @@ cnames<-c("",".tv1",".tv2",".tvs",".all",",mvf")
 mf.files<-list()
 s<-length(Overviews)
 
-#Extract metadata from one file
+#Extract metadata from one file and attached them to summary data frames
 meta<-Overviews[[3]]
 colnames(meta)[33:35]<-c("MutAA","MutAA.tv1","MutAA.tv2")
 meta<-meta[,c(1,5:42)]
@@ -157,7 +157,7 @@ mean(nonst$mean, na.rm = T)  #0.004777546
 r1<-wilcox.test(st$mean,nonst$mean, alternative = "greater", paired = FALSE) 
 r1[[3]]  #P=0.02269177
 
-######
+
 ######
 #Calculate CI
 #Using SE and z-score (alpha=0.95)

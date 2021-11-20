@@ -1,9 +1,10 @@
 #Beta regression preparation:
+
 library(DataCombine)
 library(miscTools)
 library(caret)
 
-#### For preparing BetaReg data formatting
+#### Covert the information to the BetaReg data format
 
 dat<-read.csv("Output/MutFreq/Filtered.Ts.Q35.csv",row.names=1)
 dat<-dat[dat$pos>=342,c("pos","ref","mean","Type","makesCpG", "bigAAChange")]
@@ -21,7 +22,7 @@ colnames(brDF)[9]<-"CpG"
 ### add gene annotation info for all genes
 genes<-read.csv("Data/HCV_annotations2.csv", stringsAsFactors = F)
 genes$Gene[genes$Gene=="NS1(P7)"]<-"NS1"
-#genenames<-genes$Gene
+
 gene<-c()
 for (i in 2:12){
         gene<-c(gene, rep(i, times=genes$end[i]-genes$start[i]+1))

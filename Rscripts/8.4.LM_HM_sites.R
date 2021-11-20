@@ -7,7 +7,7 @@ source("Rscripts/label_scientific.R")
 colors2<-qualitative_hcl(6, palette="Dark3")
 source("Rscripts/baseRscript.R")
 
-mfs<-read.csv("Output/MutFreq.filtered/Filtered.Ts.Q35.csv",stringsAsFactors = F, row.names = 1)
+mfs<-read.csv("Output/MutFreq/Filtered.Ts.Q35.csv",stringsAsFactors = F, row.names = 1)
 mfs<-mfs[mfs$pos>341,]
 ### Plot mutation freq. across the genome based on the mutation types 
 

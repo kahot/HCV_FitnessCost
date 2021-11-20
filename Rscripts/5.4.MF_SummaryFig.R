@@ -73,7 +73,7 @@ ggsave("Output/MutFreq/MF.byTyep_log_stats_CI.pdf", width = 4.8, height = 3.7)
 
 #### Create a plot of mut freq. by gene and by type  
 
-HCVFiles3<-list.files("Output/Overview3/",pattern="overview3.csv")
+HCVFiles3<-list.files("Output/OverviewF/",pattern="overviewF.csv")
 s<-length(HCVFiles3)
 #read the transition mutation frequency file
 Ts<-read.csv("Output/MutFreq/Filtered.Ts.Q35.csv",row.names = 1,stringsAsFactors = F)

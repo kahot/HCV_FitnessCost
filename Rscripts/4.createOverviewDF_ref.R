@@ -1,28 +1,29 @@
 #Script to create overview files with mutation frequency data and their associated features 
-#(mut freq/features based on the reference sequence (H77) are stored as "Overview2")
+#Mutation freq and features based on the reference sequence (H77)
 
 library(dplyr)
 library(tidyverse)
 
 source("Rscripts/baseRscript.R")
-dir.create("Output/Overview2/")
+#dir.create("Output/Overview2/")
 
 #Get the file names (SeqData files)
-HCVFiles_SeqData<-list.files("Output/SeqDataQ35/",pattern="SeqData")
+HCVFiles_SeqData<-list.files("Output/SeqData/",pattern="SeqData")
 
 #create an Overview file for each sample
+#Reference H77 sequence
+ref<-read.dna("Data/HCVref.fasta", format = "fasta",as.character=TRUE)
+ref<-ref[264:8800]
+
+
 Overview<-list()
 for (i in 1:length(HCVFiles_SeqData)){   
-        #for (i in 1:1){
         id<-substr(paste(HCVFiles_SeqData[i]),start=9,stop=15)
         print(id)
-        OverviewDF<-read.csv(paste0("Output/SeqDataQ35/",HCVFiles_SeqData[i]),stringsAsFactors=FALSE)
+        OverviewDF<-read.csv(paste0("Output/SeqData/",HCVFiles_SeqData[i]),stringsAsFactors=FALSE)
         OverviewDF<-OverviewDF[,-1]
 
-        ref<-read.dna("Data/HCVref.fasta", format = "fasta",as.character=TRUE)
-        #replace ? with N
-        ref<-ref[262:8800]
- 
+        
         TypeOfSite<-c()
         TypeOfSite.tv1<-c()
         TypeOfSite.tv2<-c()
@@ -72,13 +73,11 @@ for (i in 1:length(HCVFiles_SeqData)){
         names(Overview)[i]<-id   
 }
 
-
-
 ###############################
 #Mut rates from Geller paper 
 
 ## 1. Using 12 different Mutation Frequencies baed on from/to nucleotides
-mutrates<-read.csv("Data/Geller.mutation.rates.csv", stringsAsFactors = F, row.names = 1)
+mutrates<-read.csv("Output/Geller/Geller.mutation.rates.csv", stringsAsFactors = F, row.names = 1)
 
 Overview_summary<-list()
 for (i in 1:length(Overview)){
@@ -189,7 +188,7 @@ for (i in 1:length(Overview)){
         }
         
                 
-        write.csv(OverviewDF,paste0("Output/Overview2/",id,"overview2.csv"))
+        write.csv(OverviewDF,paste0("Output/Overview/",id,"overview.csv"))
         
         Overview_summary[[i]]<-OverviewDF
         print(id)

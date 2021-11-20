@@ -1,14 +1,17 @@
 #Merge two freq. tables (mapped and unmapped CSVs) created in #2 for each sample,
-#and convert the frquency counts into mutation freqeunceis ('SeqFile')
+#Convert the frequency counts into mutation frequencies ('SeqFile')
 
 library(tidyverse)
 library(plyr)
 source("Rscripts/baseRscript.R")
 
 #List of csv files
+#unmerged files
 HCVFiles<-list.files("Output/CSV/",pattern="un.csv")
+#merged files
 MergeFiles<-list.files("Output/CSV/", pattern="me.csv")
 
+#Start and End of the genome positions 
 start<-264
 end<-8800
 no<-data.frame("pos"=c(start:end))
@@ -17,13 +20,15 @@ for (i in 1:length(MergeFiles)){
         print(i)
         id<-substr(paste(HCVFiles[i]),start=1,stop=7)
         print(id)
+        #read csv files
         merge<-read.csv(paste("Output/CSV/",MergeFiles[i],sep=""))
         merge<-merge[,-c(1,2,8,9)]
         colnames(merge)<-c("pos","mA","mC","mG","mT", "mDel","mIns")
         unmerge<-read.csv(paste("Output/CSV/",HCVFiles[i],sep=""))
         unmerge<-unmerge[,-c(1,2,8,9)]
         colnames(unmerge)<-c("pos","uA","uC","uG","uT", "uDel","uIns")
-
+        
+        #combine the two files
         SeqData<-join(merge,unmerge,by="pos")
         SeqData[is.na(SeqData)] <- 0
         SeqData$A<-SeqData$mA+SeqData$uA
@@ -40,15 +45,15 @@ for (i in 1:length(MergeFiles)){
         #determine the majority nucleotide base at each site
         SeqData$MajNt<-apply(SeqData[,2:5],1,function(x) c("a","c","g","t")[which.max(x)])
         
-        #read the H77 refrence sequence:
+        #read the H77 reference sequence:
         reference<-read.dna("Data/HCVref.fasta", format = "fasta",as.character=TRUE)
         ref.code<-reference[coding.start:coding.end]
         SeqData<-merge(no,SeqData,by="pos",all.x=T)
         SeqData$ref<-ref.code[1:length(SeqData[,1])]
         
-        #check that the right position is read  in the right reading frame
-        print(seqinr::translate(SeqData$MajNt[79:110]))
-        print(seqinr::translate(SeqData$MajNt[271:300]))
+        #check that the right position is read in the right reading frame
+        #print(seqinr::translate(SeqData$MajNt[79:110]))
+        #print(seqinr::translate(SeqData$MajNt[271:300]))
         
         SeqData$transition.maj<-NA
         SeqData$transition.ref<-NA
@@ -123,7 +128,7 @@ for (i in 1:length(MergeFiles)){
                 }
         }
         
-        write.csv(SeqData,paste0("Output/SeqDataQ35/SeqData_",id,".csv"))
+        write.csv(SeqData,paste0("Output/SeqData/SeqData_",id,".csv"))
 }
 
 

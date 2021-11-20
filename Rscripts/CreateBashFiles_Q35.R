@@ -5,13 +5,12 @@ library(R.utils)
 
 #create the bash files to run bbmap and bwa
 # read the template command text file:
-cmmd<-readLines("Data/template/D7xxxx1_Q35.sh")
-cmmd2<-readLines("Data/template/D7xxxx2.sh")
-cmmd3<-readLines("Data/template/D7xxxx3.sh")
+cmmd<-readLines("Data/template/Step1_Q35.sh")
+cmmd2<-readLines("Data/template/Step2_Map.sh")
+cmmd3<-readLines("Data/template/Step3.sh")
 
-cm<-readLines("Data/template/D7xxxx1_Q35_2.sh")
 
-#choose the fastq files to be prrocessed
+# Specify the locations of fastq files to be prrocessed
 fq<-list.files("Data/unzipped/",pattern="fastq") 
 
 #create vector of odd numbers:

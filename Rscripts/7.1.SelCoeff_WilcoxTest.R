@@ -1,11 +1,4 @@
-#library(zoo)
-#library(ggplot2)
-#library(reshape2)
-#library(ggpubr)
-#library(tidyverse)
-#library(ggthemes)
-#library(sfsmisc)
-#source("Rscripts/baseRscript.R")
+# Calculate selection coefficients for each site and run statistical tests
 source("Rscripts/Pcorrection.R")
 
 mutrates<-read.csv("Output/Geller/Geller.MutRates.Summary_updated.csv", row.names = 1, stringsAsFactors = F)

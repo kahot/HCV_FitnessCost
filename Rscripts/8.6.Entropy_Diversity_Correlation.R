@@ -1,4 +1,4 @@
-#Calculate the diversity at each site and compare between-host and within-host.
+#Calculate the diversity levels at each site and compare between-host and within-host.
 
 library(ggplot2)
 library(colorspace)
@@ -8,7 +8,7 @@ cols2<-c("#66CCEE","#EE667799" ,"#22883399")
 colors2<-qualitative_hcl(6, palette="Dark3")
 
 #Read the diversity (MVF) data
-div<-read.csv("Output/MutFreq.filtered/Filtered.MVF.Q35.csv", stringsAsFactors = F, row.names = 1)
+div<-read.csv("Output/MutFreq/Filtered.MVF.Q35.csv", stringsAsFactors = F, row.names = 1)
 div<-div[,c("pos","mean")]
 
 # Read the between-host diversity (-entropy) data file
@@ -52,7 +52,7 @@ print(res)
 plot(compare$diff, pch=".")
 
 
-##Compare with other genotypes?
+##Compare with other genotypes
 #Compare Div(1a) -Entropy(1b)
 entropy1B<-read.table("Data/HCV1B_entropy.txt")
 colnames(entropy1B)<-c("org.pos.1B","A","C","G","T","Entropy1B","Low","High","Weight")
@@ -66,7 +66,6 @@ cor.test(-compare2$Entropy1B,compare2$mean, method = "spearman")
 #     rho 
 #0.5817138 
 #p-value < 2.2e-16
-
 
 
 cor.test(-compare2$Entropy2,compare2$mean, method = "spearman")
@@ -121,9 +120,3 @@ cor.test(-comp3$Entropy,comp3$mean.3a, method = "spearman")
 #0.5365946
 #p-value < 2.2e-16
 
-
-### 
-
-## Look only at nonsyn sites?
-
-compare2<-compare[compare$mean]

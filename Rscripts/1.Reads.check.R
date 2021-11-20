@@ -1,6 +1,6 @@
-##Quality filter SAM files mapped to each sample's consensus.
+##Quality filter SAM files mapped to each sample's own consensus sequence.
 #Reads are mapped separately for merged (me) and unmerged (un) files
-#Sam files are avilable at Figshare (download them to 'Output/sam/').
+#Processed bam files from this script is available at figshare.com/articles/dataset/HCV_Bam_Files/13239491
 
 library(stringr)
 library(ape)
@@ -10,11 +10,10 @@ library(msa)
 library(car)
 library(readtext)
 
-dir.create("Output/HammingDistanceFiltering/")
+#dir.create("Output/HammingDistanceFiltering/")
 suppressMessages(library(msa))
 
-
-#read sam file
+#List all sam files
 HCVsams<-list.files("Output/sam/",recursive = F,pattern="sam")
 coln<-c('QNAME','Flag','RefName','Pos','MapQ','cigar','MRNM','Mpos','isize','seq','Qual','tag1','tag2','tag3','tag4','tag5','tag6')
 
@@ -31,7 +30,7 @@ for (i in 1:length(HCVsams)){
         sam<-read.table(paste0("Output/sam/",HCVsams[i]),skip=3, col.names=coln, sep = "\t",fill=T, comment.char="",quote= "")
         sam<-sam[,1:11]
         
-        #only the mapped reads
+        #Filter out non-mapped reads
         sam<-subset(sam, MapQ>0&MapQ<61)
         sam$seq<-as.character(sam$seq)
         print(paste("# of mapped reads: ",nrow(sam)))
@@ -39,11 +38,11 @@ for (i in 1:length(HCVsams)){
         file.name<-substr(paste(HCVsams[i]),start=1,stop=7)
         fname2<-substr(paste(HCVsams[i]),start=1,stop=10)
         
-        #hist(sam$MapQ,main=paste('Histogram of Mapping Quliaty for ',fname2))
+        #hist(sam$MapQ,main=paste('Histogram of Mapping Quality for ',fname2))
         
-        #read the consensus seq of each sample
+        #read the consensus sequence of each sample
         consensus<-read.dna(paste0("Output/Consensus/",file.name,"_consensus.fasta"), format = "fasta",as.character=TRUE)
-        #cheange bases in the consensus sequence to upper case
+        #change lower case letters in the consensus sequence to upper case
         consensus<-as.character(sapply(consensus, function(v) {
                 if (is.character(v)) return(toupper(v))
                 else return(v)
@@ -51,7 +50,7 @@ for (i in 1:length(HCVsams)){
         #replace ? with N
         consensus<-recode(consensus,'"?"="N"')
 
-        #removed the rows containing indels as it substantially increases the hamming distance
+        #remove rows containing indels as they substantially increase the hamming distance
         cigars<-as.character(sam$cigar)
         indel<-grepl("I|D|N",cigars)
         sam2<-sam[!indel,]  #reads without any indels
@@ -79,7 +78,7 @@ for (i in 1:length(HCVsams)){
                 #hist(H,main=paste(file.name),xlab='humming distance',breaks=50)
         }
         
-        
+        #Plot the histograms 
         filename<-paste0("Output/HammingDistanceFiltering/",fname2,".pdf")
         pdf(filename, width =10, height = 5)
         par(mfrow=c(1,2))
@@ -118,7 +117,7 @@ for (i in 1:length(HCVsams)){
         names(ham.distance.indel[i])<-paste(fname2)
 
 
-        #eliminate the reads with hamming distance>10 and save as a new datatable
+        #eliminate the reads with hamming distance>10 and save as a new sam file
         Large.ham<-(H>10)
         sam_re<-sam2[which(Large.ham==F),]
         no_indels_removed<-length(Large.ham[Large.ham==T])
@@ -137,7 +136,7 @@ for (i in 1:length(HCVsams)){
 
 
         
-#summary of hamming distnaces without indels
+#summary of hamming distances without indels
 hamm.sum<-do.call(rbind,ham.distance)
 rown<-do.call(rbind, filenames)
 rownames(hamm.sum)<-rown
