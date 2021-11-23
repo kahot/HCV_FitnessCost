@@ -4,7 +4,8 @@ library(colorspace)
 library(ggplot2)
 source("Rscripts/label_scientific.R")
 
-colors2<-qualitative_hcl(6, palette="Dark3",)
+colors2<-qualitative_hcl(6, palette="Dark3")
+col8<-qualitative_hcl(8, palette="Dark3")
 col2_light1<-qualitative_hcl(6, palette="Set2")
 
 ## Create a summary plot 
@@ -114,7 +115,7 @@ colnames(SE)<-c("Gene","Type", "SE")
 GeneSummary$SE<-SE$SE
 
 GeneSummary$CI<-1.96*GeneSummary$SE
-write.csv(GeneSummary, "Output/MutFreq/MF.Summary.by.gene.by.type.csv")
+#write.csv(GeneSummary, "Output/MutFreq/MF.Summary.by.gene.by.type.csv")
 
 
 GeneSummary$Gene<-factor(GeneSummary$Gene, levels=genenames)
@@ -123,6 +124,7 @@ GeneSummary$Type<-factor(GeneSummary$Type,levels=c("syn","nonsyn"))
 mf2<-mf1[,c("pos","mean","gene","Type")]
 mf2$gene<-factor(mf2$gene, levels=genenames)
 mf2$Type<-factor(mf2$Type,levels=c("syn","nonsyn"))
+
 
 ybreaks<- c(10^(-4),10^(-3),10^(-2),10^(-1)) 
 ggplot()+
@@ -149,5 +151,68 @@ ggsave("Output/MutFreq/MF_violinePlot.byGene.pdf", width = 7, height = 5)
 
 
 
+### Plot mutation freq. across the genome based on the mutation types (Fig 1C)
+
+pdf("Output/MutFreq/MutFreq_acrossGenome.pdf",width=14,height=5)
+maxnuc=mf1$pos[nrow(mf1)]
+par(mar = c(4.5,5,1,1))
+
+plot(mfs$pos[1:maxnuc],mfs$mean[1:maxnuc],
+     log="y", ylab="Mutation frequency",cex.lab=1.4,
+     yaxt="n", xlab="Genome position",xaxt='n',
+     col="darkgrey",t="n",pch=".", ylim=c(3.2*10^-4,0.1))
+axis(1,at=c(seq(500,8500,by=1000)), labels=c(seq(500,8500,by=1000)))
+eaxis(side = 2, at = 10^((-1):(-(4))), cex=2)
+rect(genes$start[genes$Gene=="Core"],3.2*10^-4 , genes$end[genes$Gene=="Core"], 0.1, col = "#FFC0001A", border="#FFC0001A")
+rect(genes$start[genes$Gene=="HVR1"],3.2*10^-4 , genes$end[genes$Gene=="HVR1"], 0.2, col = "#FFC0001A", border="#FFC0001A")
 
 
+for(i in 2:4){abline(h = 1:10 * 10^(-i), col = "gray80")}
+
+for (i in 1:maxnuc){
+    if (is.na(mfs$Type[i])==T) next
+    if (mfs$Type[i]=="stop") {points(mfs$pos[i],mfs$mean[i],pch=21,col='gray30',lwd=0.3, bg="black",cex=.4)
+        next}
+    if (mfs$Type[i]=="syn") {c=col8[6]}
+    if (mfs$Type[i]=="nonsyn"&mfs$ref[i]%in%c("c","g")) {c=col8[7]}
+    if (mfs$Type[i]=="nonsyn"&mfs$ref[i]%in%c("a","t")) {c=col8[1]}
+    points(mfs$pos[i],mfs$mean[i],pch=21,col='gray30',lwd=0.3, bg=paste0(c,"99"),cex=.5)
+}
+ylow<-0.00025
+for (j in 2:(nrow(genes)-1)){
+    xleft<-genes$start[j]
+    xright<-genes$start[j+1]
+    
+    if ((j==4|j==6|j==9)){
+        rect(xleft,ylow,xright,1.3*ylow,density = NULL, angle = 45,col="white",border ="gray40")
+        text(xleft+80, 1.44*ylow,paste0(genes$Gene[j]),col="black", cex=0.8)
+        #mtext(paste0(genes$Gene[j]),side= 1, line=-0.1, at= xleft+80, col="black", cex=0.8)
+    }
+    else if (j==12){
+        rect(xleft,ylow,genes$end[j],1.3*ylow,density = NULL, angle = 45,col="white",border ="gray40")
+        text(xleft+600,1.15*ylow,paste0(genes$Gene[j]),col="black", cex=0.8)
+    }
+    else{rect(xleft,ylow,xright,1.3*ylow,density = NULL, angle = 45,col="white",border ="gray40")
+        text(xright-(xright-xleft)/2,1.15*ylow,paste0(genes$Gene[j]),col="black", cex=0.8)}
+}
+
+roll100<-rollmean(mfs$mean, k=100, na.rm=T, align="center")
+mfs$roll100<-c(rep(NA, times=50),roll100, rep(NA, times=49))
+lines(roll100~pos,data=mfs, col="#001ade", lwd=1)
+abline(v=genes$end, col="gray80", lwd=.5)
+#Add legend
+legpos=300; legposV=0.1
+rect(legpos, 0.42*legposV, (legpos+1000), 1.05*legposV, density = NULL, angle = 45,col=alpha("white",1))
+points((legpos+100),legposV*0.9,pch=21,bg=col8[6],col=1,cex=1)
+text((legpos+150),legposV*0.9,"Syn",adj=0, cex=1)
+points((legpos+100),legposV*0.74,pch=21,bg=col8[1],col=1,cex=1)
+text((legpos+150),legposV*0.74,"Nonsyn, A/T",adj=0, cex=1)
+points((legpos+100),legposV*0.6,pch=21,bg=col8[7],col=1,cex=1)
+text((legpos+150),legposV*0.6,"Nonsyn, C/G",adj=0, cex=1)
+points((legpos+100),legposV*0.49,pch=21,bg=1,col=1,cex=1)
+text((legpos+150),legposV*0.49,"Nonsense",adj=0, cex=1)
+
+
+
+box()
+dev.off()

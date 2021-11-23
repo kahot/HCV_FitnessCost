@@ -11,7 +11,6 @@
 ## Analysis Steps 
 
 ### Pre-step 1. Create bash files to process FASTQ files with CreateBashFiles.R 
-
 	• Bash template files are in Data/template (raw FASTQ files are not available for privacy reasons).
 	• Trimming/filtering was done in BBTools and mapping was done in BWA.
     • Covert it to sam files for the next step 

@@ -86,13 +86,13 @@ DR_diff<-Diff[order(Diff$ID),]
 DR_diff$NonNA_count<-apply(DR_mutfreq[,2:196],1, function(x) sum(!is.na(x)))
 DR_diff$total<-apply(DR_diff[2:196],1,sum, na.rm=T)
 DR_diff$Percent<-format(round(DR_diff$total/DR_diff$NonNA_count*100, 1), nsmall=1)
-write.csv(DR_diff, "Output/DrugRes/RAV.counts.MutFreq_summary.csv")
-write.csv(DR_mutfreq, "Output/DrugRes/RAV.MutationFreq_summary.csv")
+#write.csv(DR_diff, "Output/DrugRes/RAV.counts.MutFreq_summary.csv")
+#write.csv(DR_mutfreq, "Output/DrugRes/RAV.MutationFreq_summary.csv")
 
 
 #Create a plot
-#DR_mutfreq<-read.csv("Output/DrugRes/RAV.MutationFreq_summary.csv", stringsAsFactors = F, row.names = 1)
-#DR_diff<-read.csv("Output/DrugRes/RAV.counts.MutFreq_summary.csv", stringsAsFactors = F, row.names = 1)
+DR_mutfreq<-read.csv("Output/DrugRes/RAV.MutationFreq_summary.csv", stringsAsFactors = F, row.names = 1)
+DR_diff<-read.csv("Output/DrugRes/RAV.counts.MutFreq_summary.csv", stringsAsFactors = F, row.names = 1)
 #
 s<-length(HCVFiles)
 ns3n <-nrow(DR[DR$Gene=="NS3",])
@@ -106,7 +106,7 @@ DR_mutfreq$NonNA_count<-apply(DR_mutfreq[,2:(s+1)],1, function(x) sum(!is.na(x))
 DR_mutfreq$Percent<-format(round(DR_mutfreq$Count/DR_mutfreq$NonNA_count*100, 1), nsmall=1)
 NatPrev<-DR_mutfreq[,c('ID','Count','Percent')]
 
-write.csv(NatPrev,"Output/DrugRes/RAV.NatPrevelence.count.csv")
+#write.csv(NatPrev,"Output/DrugRes/RAV.NatPrevelence.count.csv")
 
 
 #####
@@ -192,8 +192,8 @@ for (i in 1:nrow(dr_sc)){
         if (i<=genesDF$End[3]& i>=genesDF$Begin[3]) segments(i,ymin1,i,log10(dr_sc$EstSC[i]), lwd=10, col=colors[3],lend=2)
 }
 
-abline(v=ns3n+.5,col='gray50', lwd=3)
-abline(v=ns3n+ns5an+.5,col='gray50', lwd=3 )
+abline(v=ns3n+.5,col='gray50', lwd=1.4)
+abline(v=ns3n+ns5an+.5,col='gray50', lwd=1.4 )
 
 par(mar=c(6, 5, 4, 5))
 ymin <- -5
@@ -212,6 +212,8 @@ for (i in 1:3){
         abline(v=v1, col=paste0(colors[i],"66"),lty=1, lwd=16)
         abline(v=v2, col=paste0(colors[i],"1A"),lty=1, lwd=16)
 }
+abline(v=ns3n+.5,col='gray50', lwd=1.4)
+abline(v=ns3n+ns5an+.5,col='gray50', lwd=1.4 )
 
 for (i in 1:nrow(DR_mutfreq)){
         if (i<=genesDF$End[1]){
@@ -310,6 +312,8 @@ for (i in 1:nrow(DR_mutfreq)){
         points(rep(i,s)+xjit, log10(DR_mutfreq[i,2:(s+1)]),pch=16,cex=0.3, col=colors[3])}
 }
 
+abline(v=ns3n+.5,col='gray50', lwd=3)
+abline(v=ns3n+ns5an+.5,col='gray50', lwd=3 )
 
 #add IDs
 for (i in 1:nrow(DR)){

@@ -108,6 +108,6 @@ ggplot(effects2, aes(factor,Effect*100, group=Type, fill=Type, color=Type)) +
     labs(x="", y="Estimated effects (%)")+
     theme(legend.title = element_blank())
 
-ggsave("Output/BetaReg/BetaReg.effects.MF-SC.pdf", width = 9.6, height = 5)
+ggsave("Output/BetaReg/BetaReg.effects.MF-SC.pdf", width = 10.5, height = 5)
 
 
