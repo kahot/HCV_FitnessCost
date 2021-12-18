@@ -1,12 +1,13 @@
 # Calculate selection coefficients for each site and run statistical tests
 source("Rscripts/Pcorrection.R")
 
+#Read the estiamted mutatio rates of Geller's
 mutrates<-read.csv("Output/Geller/Geller.MutRates.Summary_updated.csv", row.names = 1, stringsAsFactors = F)
-
-
+#Read the transition mutation frequency file
 df<-read.csv("Output/Mutfreq/Filtered.Ts.Q35.csv",stringsAsFactors = F,row.names = 1 )
 df<-df[,196:203]
         
+#Estiamte SC
 df$TSmutrate[df$ref=="a"]<-mutrates$MutRate[mutrates$Mutation=="AG"]
 df$TSmutrate[df$ref=="c"]<-mutrates$MutRate[mutrates$Mutation=="CU"]
 df$TSmutrate[df$ref=="g"]<-mutrates$MutRate[mutrates$Mutation=="GA"]
@@ -19,7 +20,6 @@ df$EstSC<-as.numeric(df$EstSC)
 
 
 #Estimate CI for SC
-
 reads<-read.csv("Output/ReadDepth_mean.csv",stringsAsFactors = F, row.names = 1)
 
 df<-df[df$pos>341&df$pos<8575,]
@@ -30,49 +30,42 @@ df$CI<-1.96*df$se
 write.csv(df,"Output/SelCoeff/SC.csv")
 
 
-## Test SCs are different between CpG vs. nonCpG
-#df<-read.csv("Output/SelCoeff/SC.csv", stringsAsFactors = F, row.names = 1)
+## Test of SCs by type and by CpG
+#=df<-read.csv("Output/SelCoeff/SC.csv", stringsAsFactors = F, row.names = 1)
 
-## Use A & T only for CpG Analysis
+# Use A & T only for CpG Analysis
 ty<-which(colnames(df)=="Type")
 dat<-df
-#fname=names(SC)[i]
-k=1
 
+k=1
 TypeList<-list()
+scsum<-data.frame(Type=c("syn", "nonsyn","stop"))
 for (typeofsite in c("syn", "nonsyn","stop")){
         all<-dat$EstSC[dat[,ty]==typeofsite]
         allcpg<-dat$EstSC[dat[,ty]==typeofsite & dat$makesCpG==1]
         allnoncpg1<-dat$EstSC[dat[,ty]==typeofsite & dat$makesCpG==0 & dat$ref=="t"]
         allnoncpg2<-dat$EstSC[dat[,ty]==typeofsite & dat$makesCpG==0 & dat$ref=="a"]
-        for (wtnt in c("a", "t", "c", "g")){
-                selco<- dat$EstSC[dat[,ty]==typeofsite & dat$ref==wtnt]
-                sc_NonCpG<-dat$EstSC[dat[,ty]==typeofsite & dat$ref==wtnt & dat$makesCpG==0]
-                sc_CpG<-dat$EstSC[dat[,ty]==typeofsite & dat$ref==wtnt & dat$makesCpG==1]
-                vectorname<-paste0(typeofsite,"_",wtnt)
-                assign(vectorname, selco)
-                vname1<<-paste0(typeofsite,"_",wtnt,"_noncpg")
-                assign(vname1, sc_NonCpG)
-                vname2<<-paste0(typeofsite,"_",wtnt,"_cpg")
-                assign(vname2, sc_CpG)
-                }
+
         typev<-paste0(typeofsite,"_all")
         assign(typev, all)
-        TypeList[[k]]<-all
-        names(TypeList)[k]<-typev
-        k=k+1
+        scsum$mean[k]<-mean(all, na.rm=T)
+        scsum$se[k]<-mean(dat$se[dat$Type==typeofsite],na.rm=T)
+        scsum$CI[k]<-mean(dat$CI[dat$Type==typeofsite],na.rm=T)
+        
         cpgv1<-paste0(typeofsite,"_allCpG")
         assign(cpgv1, allcpg)
-        TypeList[[k]]<-allcpg
-        names(TypeList)[k]<-cpgv1
-        k=k+1
+        
         cpgv0<-paste0(typeofsite,"_allnonCpG")
         allnoncpg<-c(allnoncpg1,allnoncpg2)
         assign(cpgv0, allnoncpg)
-        TypeList[[k]]<-allnoncpg
-        names(TypeList)[k]<-cpgv0
         k=k+1
-        }
+}
+
+scsum[4,]<-"all"
+scsum$mean[4]<-mean(dat$EstSC, na.rm=T)
+scsum$se[4]<-mean(dat$se,na.rm=T)
+scsum$CI[4]<-mean(dat$CI,na.rm=T)
+write.csv(scsum, "Output/SelCoeff/SC_summary_type.csv")
 
 #wilcox.test 
 wilcoxtest1<-data.frame("test"=matrix(nrow=4))
@@ -94,11 +87,10 @@ wilcoxtest1$test[4]<-re4[[7]]
 wilcoxtest1$rawP[4]<-re4[[3]]
 
 wilcoxtest1<-Pcorrection(wilcoxtest1)
-        
 write.csv(wilcoxtest1,"Output/SelCoeff/WilcoxonResults_by_Type.csv")
 
   
-## Test on NT by NT
+## SC by NT and CpG
 S<-data.frame()
 se<-data.frame()
 S_CpG<-data.frame()
@@ -126,7 +118,7 @@ for (i in 1:3){
         
         SC[[k]]<-sc
         names(SC)[k]<-paste0(typeofsite[i],"_",wtnt[j])
-        SC[[k+1]]<-S_NonCpG
+        SC[[k+1]]<-S_NoCpG
         names(SC)[k+1]<-paste0(typeofsite[i],"_",wtnt[j],"_noncpg")
         SC[[k+2]]<-Sc_CpG
         names(SC)[k+2]<-paste0(typeofsite[i],"_",wtnt[j],"_cpg")
@@ -146,7 +138,7 @@ write.csv(SCbyType,"Output/SelCoeff/SC.mean_byNt_byTypeCpG.csv")
 write.csv(seByType,"Output/SelCoeff/SC.se_byNt_byTypeCpG.csv")
 
 
-# Wilcoxin Test by nucleotide 
+# Wilcoxin Test of SC by nucleotide by CpG 
 nuc.sc<-data.frame("syn.cpg"=matrix(nrow=4))
 rownames(nuc.sc)<-c("a","t","c","g")
 
@@ -227,6 +219,7 @@ genetable<-genetable[genetable$pos>=342&genetable$pos<=end,]
 sc<-merge(df, genetable, by="pos")
 
 Gcomb<-t(combn(genenames[2:12],2))
+
 WilcoxTest2.gene<-data.frame(matrix(ncol=4,nrow=nrow(Gcomb)))
 colnames(WilcoxTest2.gene)<-c("gene1","gene2","test","rawP")
 
@@ -255,10 +248,10 @@ for (i in 1:nrow(Gcomb)) {
         WilcoxTest2.gene2$rawP[i]<-result[[3]]
 }        
 
-WilcoxTest2.gene<-rbind(WilcoxTest2.gene,WilcoxTest2.gene2)
+Wilcox.gene<-rbind(WilcoxTest2.gene,WilcoxTest2.gene2)
+Wilcox.gene<-Pcorrection(Wilcox.gene)
 
-WilcoxTest2.gene<-Pcorrection(WilcoxTest.gene)
-write.csv(WilcoxTest2.gene,"Output/SelCoeff/SC_WilcoxTestResults_byGene.csv")
+write.csv(Wilcox.gene,"Output/SelCoeff/SC_WilcoxTestResults_byGene.csv")
 
 
 #####
@@ -269,8 +262,8 @@ WilcoxTest.nt<-data.frame(matrix(ncol=4,nrow=nrow(Ncomb)))
 colnames(WilcoxTest.nt)<-c("NT1","NT2","test","rawP")
 
 for (i in 1:nrow(Ncomb)) {
-        vec1<-sc$EstSC[sc$ref==Ncomb[i,1]]
-        vec2<-sc$EstSC[sc$ref==Ncomb[i,2]]
+        vec1<-df$EstSC[df$ref==Ncomb[i,1]]
+        vec2<-df$EstSC[df$ref==Ncomb[i,2]]
         result<-wilcox.test(vec1, vec2, alternative = "greater", paired = FALSE) 
 
         WilcoxTest.nt$NT1[i]<-Ncomb[i,1]
@@ -283,8 +276,8 @@ WilcoxTest.nt2<-data.frame(matrix(ncol=4,nrow=nrow(Ncomb)))
 colnames(WilcoxTest.nt2)<-c("NT1","NT2","test","rawP")
 
 for (i in 1:nrow(Ncomb)) {
-        vec1<-sc$EstSC[sc$ref==Ncomb[i,1]]
-        vec2<-sc$EstSC[sc$ref==Ncomb[i,2]]
+        vec1<-df$EstSC[df$ref==Ncomb[i,1]]
+        vec2<-df$EstSC[df$ref==Ncomb[i,2]]
         result<-wilcox.test(vec1, vec2, alternative = "less", paired = FALSE) 
         
         WilcoxTest.nt2$NT1[i]<-Ncomb[i,1]
@@ -300,14 +293,13 @@ write.csv(WilcoxTest.nt,"Output/SelCoeff/SC_WilcoxTestResults_byNT.csv")
 
 ########
 
-sc3<-sc[sc$makesCpG==0,]
+sc3<-df[df$makesCpG==0,]
 
 ## wilcox test by NT -with or without CpG sites
 NT<-c("a","c","t","g")
 Ncomb<-t(combn(NT,2))
-
 for (f in 1:2){
-        if (f==1) dat<-sc; fname<-"" 
+        if (f==1) dat<-df; fname<-"" 
         if (f==2) dat<-sc3; fname<-"_noCpG"
         
         WilcoxTest.nt<-data.frame(matrix(ncol=6,nrow=nrow(Ncomb)))
@@ -341,7 +333,9 @@ for (f in 1:2){
                 WilcoxTest.nt2$mean.SC.nt2[i]<-mean(vec2)
         }   
         
+        
         WilcoxTest.nt<-rbind(WilcoxTest.nt,WilcoxTest.nt2)
+        WilcoxTest.nt<-Pcorrection(WilcoxTest.nt)
         write.csv(WilcoxTest.nt,paste0("Output/SelCoeff/SC_WilcoxTestResults_byNT", fname,".csv"))
 }
 

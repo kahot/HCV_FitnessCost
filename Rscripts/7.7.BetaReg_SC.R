@@ -98,8 +98,8 @@ colnames(effects2)[2:3]<-c("Type","Effect")
 
 ggplot(effects2, aes(factor,Effect*100, group=Type, fill=Type, color=Type)) +
     geom_hline(yintercept = 0, size=0.5, color="gray40")+
-    scale_fill_manual(values=c(paste0(colors2[4],"99"),paste0(sccol[1],"E6")), labels=c("MF","SC"))+
-    scale_color_manual(values=c(colors2[4],sccol[2]))+
+    scale_fill_manual(values=c(paste0(colors2[4],"99"),paste0(sccol[1],"E6")), guide="none")+
+    scale_color_manual(values=c(colors2[4],sccol[2]), guide="none")+
     geom_bar(stat="identity",position=position_dodge(width=.8), width = 1.2,  size=0.3)+
     theme_classic() +
     theme(axis.text=element_text(size=13), axis.title.y=element_text(size=13))+
@@ -108,6 +108,6 @@ ggplot(effects2, aes(factor,Effect*100, group=Type, fill=Type, color=Type)) +
     labs(x="", y="Estimated effects (%)")+
     theme(legend.title = element_blank())
 
-ggsave("Output/BetaReg/BetaReg.effects.MF-SC.pdf", width = 10.5, height = 5)
+ggsave("Output/BetaReg/BetaReg.effects.MF-SC_nolegend.pdf", width = 10, height = 5)
 
 

@@ -1,6 +1,6 @@
 ##Quality filter SAM files mapped to each sample's own consensus sequence.
 #Reads are mapped separately for merged (me) and unmerged (un) files
-#Processed bam files from this script is available at figshare.com/articles/dataset/HCV_Bam_Files/13239491
+#Processed bam files from this script is available at https://figshare.com/articles/dataset/HCV_Bam_Files/13239491?file=25498772
 
 library(stringr)
 library(ape)

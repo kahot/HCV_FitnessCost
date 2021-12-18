@@ -52,7 +52,7 @@ Geller.mut.rates2$mutations<-paste0(Geller.mut.rates2$nuc, gsub("to_", '', Gelle
 
 Geller.mut.rates2<-Geller.mut.rates2[,c(4,3)]
 colnames(Geller.mut.rates2)<-c("mutation","mut.rate")
-write.csv(Geller.mut.rates2,"Output/Geller/Geller.mutation.rates.csv")
+#write.csv(Geller.mut.rates2,"Output/Geller/Geller.mutation.rates.csv")
 
 
 
@@ -107,18 +107,41 @@ ggplot()+
 ggsave("Output/Geller/TsMutRates_CI_boxplot.pdf", width =3.8, heigh=4)
 
 
+#### Wilcoxon Test of mutation rates #####
+mut<-c("AG","CU","GA","UC")
+mcomb<-t(combn(mut,2))
 
-#### Wilcoxon Test #####
-# AG vs. CT
-wilcox.test(MM$value[MM$mutation=="AG"],MM$value[MM$mutation=="CU"], "greater")
-#W = 28590000, p-value < 2.2e-16
-# AG cs GA
-wilcox.test(MM$value[MM$mutation=="AG"],MM$value[MM$mutation=="GA"], "greater")
-#W = 28483000, p-value < 2.2e-16
-wilcox.test(MM$value[MM$mutation=="UC"],MM$value[MM$mutation=="CU"], "greater")
-#W = 30031000, p-value < 2.2e-16
-wilcox.test(MM$value[MM$mutation=="UC"],MM$value[MM$mutation=="GA"], "greater")
-#W = 3e+07, p-value < 2.2e-16
+WilcoxTest.mut<-data.frame(matrix(ncol=4,nrow=nrow(mcomb)))
+colnames(WilcoxTest.mut)<-c("Mut1","Mut2","test","rawP")
+for (i in 1:nrow(mcomb)) {
+        vec1<-MM$value[MM$mutation==mcomb[i,1]]
+        vec2<-MM$value[MM$mutation==mcomb[i,2]]
+        result<-wilcox.test(vec1, vec2, alternative = "greater", paired = FALSE) 
+        
+        WilcoxTest.mut$Mut1[i]<-mcomb[i,1]
+        WilcoxTest.mut$Mut2[i]<-mcomb[i,2]
+        WilcoxTest.mut$test[i]<-"greater"
+        WilcoxTest.mut$rawP[i]<-result[[3]]
+}   
+
+WilcoxTest.mut2<-data.frame(matrix(ncol=4,nrow=nrow(mcomb)))
+colnames(WilcoxTest.mut2)<-c("Mut1","Mut2","test","rawP")
+
+for (i in 1:nrow(Ncomb)) {
+        vec1<-MM$value[MM$mutation==mcomb[i,1]]
+        vec2<-MM$value[MM$mutation==mcomb[i,2]]
+        result<-wilcox.test(vec1, vec2, alternative = "less", paired = FALSE) 
+        
+        WilcoxTest.mut2$Mut1[i]<-mcomb[i,1]
+        WilcoxTest.mut2$Mut2[i]<-mcomb[i,2]
+        WilcoxTest.mut2$test[i]<-"less"
+        WilcoxTest.mut2$rawP[i]<-result[[3]]
+}   
+
+WilcoxTestMut<-rbind(WilcoxTest.mut,WilcoxTest.mut2)
+WilcoxTestMut<-Pcorrection(WilcoxTestMut)
+write.csv(WilcoxTestMut, "Output/Geller/MutationRates_test.csv")
+
 
 #########################################
 #Create Mutation Frequency Overview

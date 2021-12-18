@@ -27,7 +27,7 @@ print(results)
 pdf(paste0("Output/SummaryFig/Entropy-MF.pdf"))
 plot(compare$mean,-(compare$Entropy), ylab="", xlab="",
      pch=16,col=colors2[5],cex=0.6, cex.axis=1.2)
-mtext("Within-host diversity (Average diversity)",1,2.2, cex=1.2)
+mtext("Within-host diversity (average MVF)",1,2.2, cex=1.2)
 mtext("Between-host diversity (-Shannon's entropy)",2,2.2, cex=1.2)
 abline(lm(-(compare$Entropy)~compare$mean), col = "gray70")
 rho<-as.numeric(results[[4]])
@@ -99,24 +99,5 @@ results<-cor.test(-compare3$Entropy2,compare3$mean, method = "spearman")
 print(results)
 #     rho 
 #0.4977853
-#p-value < 2.2e-16
-
-
-#Compare Div(1b) -Entropy(1a)
-mut1b<-read.csv("~/programs/HCV_project/Output1B/MutFreq/Ave.MF.Total_Mutations_1B.csv", stringsAsFactors = F, row.names = 1)
-colnames(mut1b)[2]<-"mean.1b"
-omp2<-merge(compare2, mut1b, by.x="org.pos.1B.x",by.y="pos")
-cor.test(-comp2$Entropy,comp2$mean.1b, method = "spearman")
-#rho 
-#0.60181
-#p-value < 2.2e-16
-
-
-mut3a<-read.csv(paste0("~/programs/HCV_project/Output3A/MutFreq/Ave.MF.Total_Mutations_3A.csv"), stringsAsFactors = F,row.names = 1)
-colnames(mut3a)[2]<-"mean.3a"
-comp3<-merge(compare3, mut3a, by.x="org.pos.3A.x",by.y="pos")
-cor.test(-comp3$Entropy,comp3$mean.3a, method = "spearman")
-#      rho 
-#0.5365946
 #p-value < 2.2e-16
 
