@@ -55,7 +55,6 @@ for (i in 1:nrow(SC)){
         print(site)
 
         realFreqs<-TsFreq[,paste(site)]
-        
         #Mut rates and sel coefficients
         mu=round(SC$TSmutrate[SC$pos==site],8)
         print(mu)
@@ -193,7 +192,6 @@ ex<-simRe[simRe$Type=="syn"&simRe$Significance_holm=="Y",]
 ex2<-simRe[simRe$Type=="stop"&simRe$rawP>0.05,]
 
 # Picked 5528:5531
-
 simF<-list()
 realF<-list()
 positions<-paste(5528:5531) # for nonsignificant sites
