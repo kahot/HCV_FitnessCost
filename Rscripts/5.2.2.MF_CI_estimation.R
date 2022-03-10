@@ -119,7 +119,7 @@ for (f in 1:5){
     }
     
     
-    #calculate the total available to obtain w
+    #calculate the total # of samples available to obtain w
     df_low$w<-apply(df_low[2:196], 1, function(x) length(x[!is.na(x)]))
     
     #write.csv(df_low, paste0("Output/MutFreq/ci_estimates_lower_",files[f],".csv"))

@@ -37,33 +37,13 @@ for (i in c("Line1","Line2", "Line3")){
 }
 
 
-# the order is A, C, G, U
-mut.rates<-lapply(mutationrates,function(x) x=x[,2:5])
-
-library(abind) #abind combines multi-dim. arrays.
-rates.matrix<-abind(mut.rates,along=3)
-Geller.mut.freq<-apply(rates.matrix,c(1,2), mean)
-Geller.mut.rates<-Geller.mut.freq/23.3
-Geller.mut.rates<-data.frame(Geller.mut.rates)
-Geller.mut.rates$nuc<-c("A","C","G","U")
-
-Geller.mut.rates2<-melt(Geller.mut.rates, "nuc")
-Geller.mut.rates2$mutations<-paste0(Geller.mut.rates2$nuc, gsub("to_", '', Geller.mut.rates2$variable))
-
-Geller.mut.rates2<-Geller.mut.rates2[,c(4,3)]
-colnames(Geller.mut.rates2)<-c("mutation","mut.rate")
-#write.csv(Geller.mut.rates2,"Output/Geller/Geller.mutation.rates.csv")
-
-
-
-### calculate SE for mutation rates
 MUT<-list()
 for (i in 1:3){
         df<-mutfreq[[i]]
-
+        
         mm<-melt(df, id.vars=c("H77_site","Sequence","depth"), measure.vars=c("to_U","to_A","to_C","to_G"))
         mm$mutation<-paste0(mm$Sequence, gsub("to_", '', mm$variable))
-        mm<-mm[,c("mutation",'value',"depth")]
+        mm<-mm[,c("H77_site","mutation",'value',"depth")]
         mm$Line<-names(mutfreq)[i]
         MUT[[i]]<-mm
 }
@@ -73,38 +53,254 @@ MM$mut.rate<-MM$value/23.3
 mutDF<-aggregate(MM$mut.rate, by=list(MM$mutation),mean)
 colnames(mutDF)<-c("Mutation","MutRate")
 mutationnames<-mutDF$Mutation
-
-#estimate S.E.
-se<-data.frame(Mutation=mutationnames)
-for (i in 1:nrow(se)){
-        df<-MM[MM$mutation==mutationnames[i],]
-        reads<-aggregate(df["depth"],by=list(df$Line), sum, na.rm=T)
-        #se$se[i]<-sqrt(mean(df$mut.rate)*(1-mean(df$mut.rate))/sum(df$depth))
-        se$se[i]<-sqrt(mean(df$mut.rate)*(1-mean(df$mut.rate))/mean(reads$depth))
-        
-}
-
-mutDF$SE<-se$se
-mutDF$CI<-mutDF$SE*1.96
-
 write.csv(mutDF,"Output/Geller/Geller.MutRates.Summary_updated.csv")
 
-#Plot MutRates with CI
-#transition only
-mutTs<-mutDF[mutDF$Mutation=="AG"|mutDF$Mutation=="GA"|mutDF$Mutation=="CU"|mutDF$Mutation=="UC",]
-MM2<-MM[MM$mutation=="AG"|MM$mutation=="GA"|MM$mutation=="CU"|MM$mutation=="UC",]
+
+## estimate CIs for transition mutations
+
+#first insert NA into the invalid sites. 
+Depths<-data.frame(pos=DF$H77_site)
+Lines<-list()
+lns<-c("Line1","Line2", "Line3")
+for (i in 1:3){
+    id<-lns[i]
+    name<-paste0(id,"data")
+    line.df<-DF
+    line.df<-line.df[,c(1,3, grep(id, colnames(line.df)))]
+    line.df[line.df[paste0(id,"_valid_case")]==0,4:8]<-NA
+    line.df[line.df[paste0(id,"_valid_case")]==0,]
+    
+    #create a depth matrix
+    Depths[,id]<-line.df[, (paste0(id,"_sequence_depth"))]
+    
+    #create a count matrix
+    line.df<-line.df[,c(1,2,5:8)]
+    colnames(line.df)[3:6] <-gsub(paste0(id,"_substitutions_for_"), 'to',colnames(line.df[3:6]))
+    Lines[[i]]<-line.df
+    names(Lines)[i]<-id
+}
+
+meta<-Lines[[1]][1:2]
+ToA<-cbind(meta, data.frame(sapply(Lines,"[[","toA")))
+ToC<-cbind(meta, data.frame(sapply(Lines,"[[","toC")))
+ToG<-cbind(meta, data.frame(sapply(Lines,"[[","toG")))
+ToU<-cbind(meta, data.frame(sapply(Lines,"[[","toU")))
+
+ToA$Mutation<-paste0(ToA$Sequence, "A")
+ToC$Mutation<-paste0(ToA$Sequence, "C")
+ToG$Mutation<-paste0(ToA$Sequence, "G")
+ToU$Mutation<-paste0(ToA$Sequence, "U")
+
+#extract transition mutations from the 4 dataframes and combine
+muts<-c()
+muts<-rbind(muts, ToA[ToA$Mutation=="GA",])
+muts<-rbind(muts, ToC[ToC$Mutation=="UC",])
+muts<-rbind(muts, ToG[ToG$Mutation=="AG",])
+muts<-rbind(muts, ToU[ToU$Mutation=="CU",])
+muts<-muts[order(muts$H77_site),]
+
+Depths<-Depths[Depths$pos%in% muts$H77_site,]
+
+#CI estimates using F-distributions
+ci_low<-data.frame(pos=muts$H77_site)
+ci_up<-data.frame(pos=muts$H77_site)
+
+##calculate F values
+#n1= n(total read #) -x (mutations#)+1
+muts$n1<-Depths$Line1-muts$Line1+1
+muts$n2<-Depths$Line2-muts$Line2+1
+muts$n3<-Depths$Line3-muts$Line3+1
+muts$w<-apply(muts[3:5],1, function(x) length(x[!is.na(x)]))
+
+p=0.05
+muts$f1.1<-apply(muts[,c("Line1","n1")], 1, function(x) ifelse(x["Line1"]==0, 0, qf(p/2, x["n1"]*2, x["Line1"]*2, lower.tail=FALSE)))
+muts$f2.1<-qf(p/2, (muts$Line1+1)*2, (Depths$Line1-muts$Line1)*2, lower.tail=FALSE)
+
+muts$f1.2<-apply(muts[,c("Line2","n2")], 1, function(x) ifelse(x["Line2"]==0, 0, qf(p/2, x["n2"]*2, x["Line2"]*2, lower.tail=FALSE)))
+muts$f2.2<-qf(p/2, (muts$Line2+1)*2, (Depths$Line2-muts$Line2)*2, lower.tail=FALSE)
+
+muts$f1.3<-apply(muts[,c("Line3","n3")], 1, function(x) ifelse(x["Line3"]==0, 0, qf(p/2, x["n3"]*2, x["Line3"]*2, lower.tail=FALSE)))
+muts$f2.3<-qf(p/2, (muts$Line3+1)*2, (Depths$Line3-muts$Line3)*2, lower.tail=FALSE)
+
+ci_low[,"Line1"]<-apply(muts[,c("Line1","n1","f1.1")], 1, function(x) ifelse(x["Line1"]==0, 0,x["Line1"]/(x["Line1"]+x["n1"]*x["f1.1"]))) 
+ci_low[,"Line2"]<-apply(muts[,c("Line2","n2","f1.2")], 1, function(x) ifelse(x["Line2"]==0, 0,x["Line2"]/(x["Line2"]+x["n2"]*x["f1.2"]))) 
+ci_low[,"Line3"]<-apply(muts[,c("Line3","n3","f1.3")], 1, function(x) ifelse(x["Line3"]==0, 0,x["Line3"]/(x["Line3"]+x["n3"]*x["f1.3"]))) 
+
+ci_up[,"Line1"]<-((muts$Line1+1)*muts$f2.1)/((Depths$Line1-muts$Line1)+(muts$Line1+1)*muts$f2.1)
+ci_up[,"Line2"]<-((muts$Line2+1)*muts$f2.2)/((Depths$Line2-muts$Line2)+(muts$Line2+1)*muts$f2.2)
+ci_up[,"Line3"]<-((muts$Line3+1)*muts$f2.3)/((Depths$Line3-muts$Line3)+(muts$Line3+1)*muts$f2.3)
+
+#CI esitmation for each position across populations
+df.CI<-data.frame(pos=muts$H77_site, Mutation=muts$Mutation)
+
+#rescaling factor for each site. Assing an equal weight for all samples at each position
+Depths$wi2<-(1/muts$w)^2
+Depths$W<-1/muts$w
+r1=apply(Depths, 1, function(x) (sum(1/x[2:4], na.rm=T)*x["wi2"])^0.5)
+r2=apply(Depths, 1, function(x) sum(1/sqrt(x[2:4]), na.rm=T)*x["W"])
+
+R=r1/r2
+
+#mut rates at each site for transition mutations
+ts<-c("AG","GA","UC","CU")
+MM2<-MM[MM$mutation %in% ts,]
+MM_sites<-aggregate(MM2$mut.rate, by=list(MM2$H77_site),mean, na.rm=T)
+
+MM_sites<-MM_sites[order(MM_sites$Group.1),]
+MM_sites<-MM_sites[MM_sites$Group.1 %in% muts$H77_site,]
+
+#Mean (equal weights estimation) w/o rescaling factors
+df.CI[,"lower"]<-rowMeans(ci_low[2:4], na.rm=T)/23.3
+df.CI[,"upper"]<-rowMeans(ci_up[2:4], na.rm=T)/23.3
+#CI adjusted by the rescaling factor
+df.CI[,"lower.R"]<-(MM_sites$x-df.CI$lower)*R
+df.CI[,"upper.R"]<-(df.CI$upper-MM_sites$x)*R
+
+#length(MM_sites$Group.1[MM_sites$Group.1==df.CI$pos])
+#length(MM_sites$Group.1[MM_sites$Group.1==muts$H77_site])
+
+df.CI$M.rates<-MM_sites$x
+df.CI$diff<-MM_sites$x-df.CI$lower
+
+CI.means<-aggregate(df.CI[3:6], by=list(df.CI$Mutation), mean, na.rm=T)
+CI.means
+
+CI.means<-merge(mutDF, CI.means, by="Group.1")
+ggplot()+
+    scale_y_continuous(trans = 'log10', labels=label_scientific2)+
+    geom_boxplot(data=MM2, aes(x=mutation, y=mut.rate),outlier.alpha = 0.3, color="gray60",fill=paste0(colors2[5],"66"), width=0.5)+
+    geom_errorbar(data=CI.means, aes(x=Group.1, y=x, ymin=x-lower.R, ymax=x+upper.R), width=0.1, size=.3, color="#507FB9")+
+    geom_point(data=CI.means, aes(x=Group.1, y=x),size =1.8, color="blue")+
+    theme(axis.title.x=element_blank())+ylab("Estimated mutation rate ± 95% CI")+
+    theme_classic()+
+    xlab('')+
+    scale_x_discrete(breaks=c("AG","CU","GA","UC"),labels=c(expression(A%->%G),expression(C%->%"T"),expression(G%->%A),expression("T"%->%C)))+
+    theme(axis.text.x =element_text(color=1, size=12))
+ggsave("Output/Geller/MutRates_withCIestimates.pdf", width =4.5, heigh=4)
 
 ggplot()+
-        scale_y_continuous(trans = 'log10', labels=label_scientific2)+
-        geom_boxplot(data=MM2, aes(x=mutation, y=mut.rate),outlier.alpha = 0.3, color="gray60",fill=paste0(colors2[5],"66"), width=0.5)+
-        geom_errorbar(data=mutTs, aes(x=Mutation, y=mean, ymin=pmax(MutRate-CI,0), ymax=MutRate+CI), width=0.1, size=.3, color="gray30")+
-        geom_point(data=mutTs, aes(x=Mutation, y=MutRate),size =1.8, color="blue")+
-        theme(axis.title.x=element_blank())+ylab("Estimated mutation rate ± 95% CI")+
-        theme_classic()+
-        xlab('')+
-        scale_x_discrete(breaks=c("AG","CU","GA","UC"),labels=c(expression(A%->%G),expression(C%->%"T"),expression(G%->%A),expression("T"%->%C)))+
-        theme(axis.text.x =element_text(color=1, size=12))
-ggsave("Output/Geller/TsMutRates_CI_boxplot.pdf", width =3.8, heigh=4)
+    scale_y_continuous(trans = 'log10', labels=label_scientific2)+
+    geom_boxplot(data=MM2, aes(x=mutation, y=mut.rate),outlier.alpha = 0.3, color="gray60",fill=paste0(colors2[5],"66"), width=0.5)+
+    geom_errorbar(data=CI.means, aes(x=Group.1, y=x, ymin=lower, ymax=upper), width=0.1, size=.3, color="#507FB9")+
+    geom_point(data=CI.means, aes(x=Group.1, y=x),size =1.8, color="blue")+
+    theme(axis.title.x=element_blank())+ylab("Estimated mutation rate ± 95% CI")+
+    theme_classic()+
+    xlab('')+
+    scale_x_discrete(breaks=c("AG","CU","GA","UC"),labels=c(expression(A%->%G),expression(C%->%"T"),expression(G%->%A),expression("T"%->%C)))+
+    theme(axis.text.x =element_text(color=1, size=12))
+ggsave("Output/Geller/MutRates_withCIestimates_withoutRescaling.pdf", width =4.5, heigh=4)
+
+
+write.csv(CI.means,"Output/Geller/Geller.MutRates.CIs.csv")
+
+
+#estimate CI with Agresi-Coull method
+DF<-geller[!(geller$Line1_valid_case==0&geller$Line2_valid_case==0&geller$Line3_valid_case==0),]
+ci<-data.frame(DF$H77_site)
+
+#first insert NA into the invalid sites. 
+Depths<-data.frame(pos=DF$H77_site)
+Lines<-list()
+lns<-c("Line1","Line2", "Line3")
+for (i in 1:3){
+    id<-lns[i]
+    name<-paste0(id,"data")
+    line.df<-DF
+    line.df<-line.df[,c(1,3, grep(id, colnames(line.df)))]
+    line.df[line.df[paste0(id,"_valid_case")]==0,4:8]<-NA
+    line.df[line.df[paste0(id,"_valid_case")]==0,]
+    
+    #create a depth matrix
+    Depths[,id]<-line.df[, (paste0(id,"_sequence_depth"))]
+    
+    #create a count matrix
+    line.df<-line.df[,c(1,2,5:8)]
+    colnames(line.df)[3:6] <-gsub(paste0(id,"_substitutions_for_"), 'to',colnames(line.df[3:6]))
+    Lines[[i]]<-line.df
+    names(Lines)[i]<-id
+}
+
+meta<-Lines[[1]][1:2]
+ToA<-cbind(meta, data.frame(sapply(Lines,"[[","toA")))
+ToC<-cbind(meta, data.frame(sapply(Lines,"[[","toC")))
+ToG<-cbind(meta, data.frame(sapply(Lines,"[[","toG")))
+ToU<-cbind(meta, data.frame(sapply(Lines,"[[","toU")))
+
+ToA$Mutation<-paste0(ToA$Sequence, "A")
+ToC$Mutation<-paste0(ToA$Sequence, "C")
+ToG$Mutation<-paste0(ToA$Sequence, "G")
+ToU$Mutation<-paste0(ToA$Sequence, "U")
+
+muts<-list()
+muts[[1]]<-ToA
+muts[[2]]<-ToC
+muts[[3]]<-ToG
+muts[[4]]<-ToU
+
+CIs_nuc<-list()
+for (j in 1:4){
+    df<-muts[[j]]
+    ci_low<-data.frame(df$H77_site)
+    ci_up<-data.frame(df$H77_site)
+    for (i in 1: nrow(df)){
+        if  (is.na(df$Line1[i])) ci_low$lower1[i]=NA; ci_up$upper1[i]=NA
+        if (!is.na(df$Line1[i])) {
+            #if (df$Line1[i]==0) cis$lower1[i]<-0; cis$lower1[i]<-0
+            ci_estimates<-binom.confint(df$Line1[i], Depths$Line1[i], conf.level=0.95, methods="agresti-coull")
+            ci_low$lower1[i]<-ci_estimates$lower
+            ci_up$upper1[i]<-ci_estimates$upper
+        }
+        if  (is.na(df$Line2[i])) ci_low$lower2[i]=NA; ci_up$upper2[i]=NA
+        if (!is.na(df$Line2[i])) {
+            ci_estimates<-binom.confint(df$Line2[i], Depths$Line2[i], conf.level=0.95, methods="agresti-coull")
+            ci_low$lower2[i]<-ci_estimates$lower
+            ci_up$upper2[i]<-ci_estimates$upper
+        }
+        if  (is.na(df$Line3[i])) ci_low$lower3[i]=NA; ci_up$upper3[i]=NA
+        if (!is.na(df$Line3[i])) {
+            ci_estimates<-binom.confint(df$Line3[i], Depths$Line3[i], conf.level=0.95, methods="agresti-coull")
+            ci_low$lower3[i]<-ci_estimates$lower
+            ci_up$upper3[i]<-ci_estimates$upper
+        }
+    }
+    cis<-data.frame(df$H77_site)
+    cis$lower<-rowMeans(ci_low[2:4], na.rm=T)
+    cis$upper<-rowMeans(ci_up[2:4], na.rm=T)
+    cis$Mutations<-df$Mutation
+    CIs_nuc[[j]]<-cis    
+}
+
+CI.mean<-data.frame()
+for ( i in 1:4){
+    df<-CIs_nuc[[i]]
+    ave<-aggregate(df[,2:3], by=list(df$Mutations), mean, na.rm=T)  
+    CI.mean<-rbind(CI.mean, ave)
+}
+ts<-c("AG","GA","UC","CU")
+CI.Ts<-CI.mean[CI.mean$Group.1 %in% ts,]
+colnames(CI.Ts)[1]<-"Mutation"
+CI.Ts$lower<-CI.Ts$lower/23.3
+CI.Ts$upper<-CI.Ts$upper/23.3
+CI.Ts$lower[CI.Ts$lower<=0]<-0.00000000001
+mutTs2_new<-merge(CI.Ts, mutTs2[,1:2], by="Mutation")
+
+
+ggplot()+
+    scale_y_continuous(trans = 'log10', labels=label_scientific2)+
+    geom_boxplot(data=MM2, aes(x=mutation, y=mut.rate),outlier.alpha = 0.3, color="gray60",fill=paste0(colors2[5],"66"), width=0.5)+
+    geom_errorbar(data=mutTs2_new, aes(x=Mutation, y=MutRate, ymin=lower, ymax=upper), width=0.1, size=.3, color="gray30")+
+    geom_point(data=mutTs2, aes(x=Mutation, y=MutRate),size =1.8, color="blue")+
+    theme(axis.title.x=element_blank())+ylab("Estimated mutation rate ± 95% CI")+
+    theme_classic()+
+    xlab('')+
+    scale_x_discrete(breaks=c("AG","CU","GA","UC"),labels=c(expression(A%->%G),expression(C%->%"T"),expression(G%->%A),expression("T"%->%C)))+
+    theme(axis.text.x =element_text(color=1, size=12))
+ggsave("Output/Geller/TsMutRates_CIac.pdf", width =4.5, heigh=4)
+
+
+
+
+    
 
 
 #### Wilcoxon Test of mutation rates #####
