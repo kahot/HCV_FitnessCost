@@ -19,7 +19,7 @@ mfm$id<-paste0(mfm$Mutation,".",mfm$variable)
 mfm$id<-gsub(".All","", mfm$id )
 colnames(mfm)[2:3]<-c("Type","MF")
 
-Sum<-read.csv("Output/MutFreq/CI_TypeofMutaions_summary.csv", stringsAsFactors = F, row.names = 1)
+Sum<-read.csv("Output/MutFreq/SE_TypeofMutaions_summary.csv", stringsAsFactors = F, row.names = 1)
 #consistent variable
 Sum$Type[Sum$Type=="all"]<-"All"
 Sum$Type[Sum$Type=="syn"]<-"Syn"
@@ -28,121 +28,74 @@ Sum$Type[Sum$Type=="stop"]<-"Nonsense"
 Sum$id<-paste0(Sum$Mutation,".",Sum$Type)
 Sum$id<-gsub(".All","", Sum$id )
 
-mfmF<-merge(mfm, sumF[,c(2,3,6)], id.vars="id")
-mfmAC<-merge(mfm, sumAC[,c(2,3,6)], id.vars="id")
-sumF2<-Sum[Sum$Method=="no.rescaling",]
-
 #Order the xaxis
 mfm$id<-factor(mfm$id, levels=c("Ts","Tvs","Ts.Syn","Tvs.Syn","Ts.Nonsyn","Tvs.Nonsyn","Ts.Nonsense","Tvs.Nonsense"))
 mfm$Type<-factor(mfm$Type, levels=c("All","Syn","Nonsyn","Nonsense"))
 
-mfmF<-merge(mfm, sumF[,c(2,3,6)], id.vars="id")
-mfmAC<-merge(mfm, sumAC[,c(2,3,6)], id.vars="id")
-mfmF2<-merge(mfm, sumF2[,c(2,3,6)], id.vars="id")
 
-#CIs based on F-distributions with rescaling
+mfm<-merge(mfm, Sum[,c("id","SE","CI")], id.vars="id")
+
+
+Ts<-read.csv("Output/MutFreq/Filtered.Ts.Q35.csv",row.names = 1,stringsAsFactors = F)
+Ts<-Ts[Ts$pos>341&Ts$pos<8575,]
+MF<-Ts[Ts$Type=="syn",c("pos","mean")]
+MF$Type="Syn"
+v2<-Ts[Ts$Type=="nonsyn",c("pos","mean")]
+v2$Type="Nonsyn"
+MF<-rbind(MF, v2)
+v3<-Ts[Ts$Type=="stop",c("pos","mean")]
+v3$Type="Nonsense"
+MF<-rbind(MF, v3)
+colnames(MF)[2]<-"freq"
+MF$Mutation<-"Ts"
+MF<-MF[,-1]
+mf2<-MF
+mf2$Type<-"All"
+MF<-rbind(MF, mf2)
+tvs.mf<-read.csv("Output/MutFreq/MF_tvs_all.csv", row.names = 1)
+tvs.mf2<-tvs.mf
+tvs.mf2$Type<-"All"
+tvs.mf<-rbind(tvs.mf, tvs.mf2)
+MF<-rbind(MF, tvs.mf)
+MF$Type<-factor(MF$Type, levels=c("All","Syn","Nonsyn","Nonsense"))
+
+#CIs based
 ggplot()+
-    geom_errorbar(data=mfmF, aes(x=Type,y=MF,ymin=MF-low, ymax=MF+up,fill=Mutation), 
-                  position=position_dodge(width=.78),size=0.4, width=.5, color="gray30")+
-    geom_point(data=mfmF, aes(x=Type,y=MF, fill=Mutation),
+    geom_boxplot(data=MF, aes(x=Type, y=freq, color=Mutation, fill=Mutation), outlier.alpha = 0.2,outlier.size = 0.8)+
+    geom_errorbar(data=mfm, aes(x=Type,y=MF,ymin=MF-CI, ymax=MF+CI,fill=Mutation), 
+                  position=position_dodge(width=.78),size=0.3, width=.4, color="gray30")+
+    geom_point(data=mfm, aes(x=Type,y=MF, color=Mutation),
+               position=position_dodge(width=.78), shape=16, size=3.2)+
+    geom_point(data=mfm, aes(x=Type,y=MF, fill=Mutation),
                position=position_dodge(width=.78), color="gray30",shape=21, size=3.2)+
     theme_classic()+
     theme(axis.text.x = element_text(size=12, angle=45, hjust=1, color=1))+
-    theme(axis.title.x=element_blank())+ylab("Mean mutation freq. ± 95% C.I.")+
-    scale_fill_manual(values=colors2[c(3,2)],  guide="none",labels=c("Transition","Transversion"))+
+    theme(axis.title.x=element_blank())+ylab("Average mutation frequency")+
+    scale_fill_manual(values=paste0(colors2[c(3,2)],"33"),  guide="none",labels=c("Transition","Transversion"))+
+    scale_color_manual(values=colors2[c(3,2)],  guide="none",labels=c("Transition","Transversion"))+
     geom_vline(xintercept = c(1:3)+0.5, color = "gray60", size=.4)+
     scale_y_continuous(trans = 'log10', labels=label_scientific)+
-    annotate("segment", x = 0.8, xend = 1.2, y = 0.01, yend = 0.01, colour = "gray60", size=0.3)+
-    annotate("segment", x = 0.8, xend = 0.8, y = 0.007, yend = 0.01, colour = "gray60", size=0.3)+
-    annotate("segment", x = 1.2, xend = 1.2, y = 0.0015, yend = 0.01, colour = "gray60", size=0.3)+
-    annotate("text", x = 1, y = 0.0105, colour = "gray60", label="***", size=3)+
-    annotate("segment", x = 1.8, xend = 2.8, y = 0.012, yend = 0.012, colour = "#A5C0D9", size=0.3)+
-    annotate("segment", x = 1.8, xend = 1.8, y = 0.01,  yend = 0.012, colour  = "#A5C0D9", size=0.3)+
-    annotate("segment", x = 2.8, xend = 2.8, y = 0.0045, yend = 0.012, colour  = "#A5C0D9", size=0.3)+
-    annotate("text", x = 2.3, y = 0.0125, colour = "#A5C0D9", label="***", size=3)+
-    annotate("segment", x = 2.85, xend = 3.8, y = 0.012, yend = 0.012, colour = "#A5C0D9", size=0.3)+
-    annotate("segment", x = 2.85, xend = 2.85,y = 0.0045, yend = 0.012, colour = "#A5C0D9", size=0.3)+
-    annotate("segment", x = 3.8, xend = 3.8,  y = 0.003, yend = 0.012,   colour = "#A5C0D9", size=0.3)+
-    annotate("text", x = 3.3, y = 0.0125, colour = "#A5C0D9", label="***", size=3)+
-    annotate("segment", x = 2.2, xend = 3.2, y = 0.004, yend = 0.004, colour =  "#CEBCDE", size=0.3)+
-    annotate("segment", x = 2.2, xend = 2.2, y = 0.002, yend = 0.004, colour = "#CEBCDE", size=0.3)+
-    annotate("segment", x = 3.2, xend = 3.2, y = 0.001, yend = 0.004, colour = "#CEBCDE", size=0.3)+
-    annotate("text", x = 2.7, y = 0.0042, colour = "#CEBCDE", label="***", size=3)+
-    annotate("text", x=4.3, y=0.015, color="gray20", label="Ts", size=4, hjust=0)+
-    annotate("text", x=4.3, y=0.011, color="gray20", label="Tvs",size=4, hjust=0)+
-    annotate("point",x=4.2, y=0.015, fill=colors2[3],shape=21, color="gray30",size=2.5)+
-    annotate("point",x=4.2, y=0.011, fill=colors2[2],shape=21, color="gray30",size=2.5)
-ggsave("Output/MutFreq/MF.byTyep_log_stats_CI.pdf", width = 4.8, height = 3.7)
-
-
-#Agresti–Coull
-ggplot()+
-    geom_errorbar(data=mfmAC, aes(x=Type,y=MF,ymin=MF-low, ymax=MF+up,fill=Mutation), 
-                  position=position_dodge(width=.78),size=0.3, width=.2, color="gray30")+
-    geom_point(data=mfmAC, aes(x=Type,y=MF, fill=Mutation),
-               position=position_dodge(width=.78), color="gray30",shape=21, size=3)+
-    theme_classic()+
-    theme(axis.text.x = element_text(size=12, angle=45, hjust=1, color=1))+
-    theme(axis.title.x=element_blank())+ylab("Mean mutation freq. ± 95% C.I.")+
-    scale_fill_manual(values=colors2[c(3,2)],  guide="none",labels=c("Transition","Transversion"))+
-    geom_vline(xintercept = c(1:3)+0.5, color = "gray60", size=.4)+
-    scale_y_continuous(trans = 'log10', labels=label_scientific)+
-    annotate("segment", x = 0.8, xend = 1.2, y = 0.017, yend = 0.017, colour = "gray60", size=0.3)+
-    annotate("segment", x = 0.8, xend = 0.8, y = 0.014, yend = 0.017, colour = "gray60", size=0.3)+
-    annotate("segment", x = 1.2, xend = 1.2, y = 0.005, yend = 0.017, colour = "gray60", size=0.3)+
-    annotate("text", x = 1, y = 0.018, colour = "gray60", label="***", size=3)+
-    annotate("segment", x = 1.8, xend = 2.8, y = 0.026, yend = 0.026, colour = "#A5C0D9", size=0.3)+
-    annotate("segment", x = 1.8, xend = 1.8, y = 0.022, yend = 0.026, colour  = "#A5C0D9", size=0.3)+
-    annotate("segment", x = 2.8, xend = 2.8, y = 0.012, yend = 0.026, colour  = "#A5C0D9", size=0.3)+
-    annotate("text", x = 2.3, y = 0.027, colour = "#A5C0D9", label="***", size=3)+
-    annotate("segment", x = 2.85, xend = 3.8, y = 0.026, yend = 0.026, colour = "#A5C0D9", size=0.3)+
-    annotate("segment", x = 2.85, xend = 2.85,y = 0.012, yend = 0.026, colour = "#A5C0D9", size=0.3)+
-    annotate("segment", x = 3.8, xend = 3.8,  y = 0.008,  yend = 0.026,   colour = "#A5C0D9", size=0.3)+
-    annotate("text", x = 3.3, y = 0.027, colour = "#A5C0D9", label="***", size=3)+
-    annotate("segment", x = 2.2, xend = 3.2, y = 0.010, yend = 0.01, colour =  "#CEBCDE", size=0.3)+
-    annotate("segment", x = 2.2, xend = 2.2, y = 0.006, yend = 0.01, colour = "#CEBCDE", size=0.3)+
-    annotate("segment", x = 3.2, xend = 3.2, y = 0.004, yend = 0.01, colour = "#CEBCDE", size=0.3)+
-    annotate("text", x = 2.7, y = 0.0105, colour = "#CEBCDE", label="***", size=3)+
-    annotate("text", x=4.3, y=0.015, color="gray20", label="Ts", size=4, hjust=0)+
-    annotate("text", x=4.3, y=0.011, color="gray20", label="Tvs",size=4, hjust=0)+
-    annotate("point",x=4.2, y=0.015, fill=colors2[3],shape=21, color="gray30",size=2.5)+
-    annotate("point",x=4.2, y=0.011, fill=colors2[2],shape=21, color="gray30",size=2.5)
-ggsave("Output/MutFreq/MF.byTyep_log_stats_CI_agresi-coull.pdf", width = 4.8, height = 3.7)
-
-#F-distribution method without rescaling
-ggplot()+
-    geom_errorbar(data=mfmF2, aes(x=Type,y=MF,ymin=MF-low, ymax=MF+up,fill=Mutation), 
-                  position=position_dodge(width=.78),size=0.3, width=.2, color="gray30")+
-    geom_point(data=mfmF2, aes(x=Type,y=MF, fill=Mutation),
-               position=position_dodge(width=.78), color="gray30",shape=21, size=3.2)+
-    theme_classic()+
-    theme(axis.text.x = element_text(size=12, angle=45, hjust=1, color=1))+
-    theme(axis.title.x=element_blank())+ylab("Mean mutation freq. ± 95% C.I.")+
-    scale_fill_manual(values=colors2[c(3,2)],  guide="none",labels=c("Transition","Transversion"))+
-    geom_vline(xintercept = c(1:3)+0.5, color = "gray60", size=.4)+
-    scale_y_continuous(trans = 'log10', labels=label_scientific)+
-    annotate("segment", x = 0.8, xend = 1.2, y = 0.017, yend = 0.017, colour = "gray60", size=0.3)+
-    annotate("segment", x = 0.8, xend = 0.8, y = 0.014, yend = 0.017, colour = "gray60", size=0.3)+
-    annotate("segment", x = 1.2, xend = 1.2, y = 0.005, yend = 0.017, colour = "gray60", size=0.3)+
-    annotate("text", x = 1, y = 0.018, colour = "gray60", label="***", size=3)+
-    annotate("segment", x = 1.8, xend = 2.8, y = 0.026, yend = 0.026, colour = "#A5C0D9", size=0.3)+
-    annotate("segment", x = 1.8, xend = 1.8, y = 0.022, yend = 0.026, colour  = "#A5C0D9", size=0.3)+
-    annotate("segment", x = 2.8, xend = 2.8, y = 0.012, yend = 0.026, colour  = "#A5C0D9", size=0.3)+
-    annotate("text", x = 2.3, y = 0.027, colour = "#A5C0D9", label="***", size=3)+
-    annotate("segment", x = 2.85, xend = 3.8, y = 0.026, yend = 0.026, colour = "#A5C0D9", size=0.3)+
-    annotate("segment", x = 2.85, xend = 2.85,y = 0.012, yend = 0.026, colour = "#A5C0D9", size=0.3)+
-    annotate("segment", x = 3.8, xend = 3.8,  y = 0.008,  yend = 0.026,   colour = "#A5C0D9", size=0.3)+
-    annotate("text", x = 3.3, y = 0.027, colour = "#A5C0D9", label="***", size=3)+
-    annotate("segment", x = 2.2, xend = 3.2, y = 0.010, yend = 0.01, colour =  "#CEBCDE", size=0.3)+
-    annotate("segment", x = 2.2, xend = 2.2, y = 0.006, yend = 0.01, colour = "#CEBCDE", size=0.3)+
-    annotate("segment", x = 3.2, xend = 3.2, y = 0.004, yend = 0.01, colour = "#CEBCDE", size=0.3)+
-    annotate("text", x = 2.7, y = 0.0105, colour = "#CEBCDE", label="***", size=3)+
-    annotate("text", x=4.3, y=0.015, color="gray20", label="Ts", size=4, hjust=0)+
-    annotate("text", x=4.3, y=0.011, color="gray20", label="Tvs",size=4, hjust=0)+
-    annotate("point",x=4.2, y=0.015, fill=colors2[3],shape=21, color="gray30",size=2.5)+
-    annotate("point",x=4.2, y=0.011, fill=colors2[2],shape=21, color="gray30",size=2.5)
-ggsave("Output/MutFreq/MF.byTyep_log_stats_CI_FnoRescaling.pdf", width = 4.8, height = 3.7)
-
+    annotate("segment", x = 0.8, xend = 1.2, y = 0.07, yend = 0.07, colour = "gray60", size=0.3)+
+    annotate("segment", x = 0.8, xend = 0.8, y = 0.05, yend = 0.07, colour = "gray60", size=0.3)+
+    annotate("segment", x = 1.2, xend = 1.2, y = 0.025, yend = 0.07, colour = "gray60", size=0.3)+
+    annotate("text", x = 1, y = 0.075, colour = "gray60", label="***", size=3)+
+    annotate("segment", x = 1.81, xend = 2.8, y = 0.07, yend = 0.07, colour = "#A5C0D9", size=0.3)+
+    annotate("segment", x = 1.81, xend = 1.81, y = 0.04,  yend = 0.07, colour  = "#A5C0D9", size=0.3)+
+    annotate("segment", x = 2.8, xend = 2.8, y = 0.03, yend = 0.07, colour  = "#A5C0D9", size=0.3)+
+    annotate("text", x = 2.3, y = 0.075, colour = "#A5C0D9", label="***", size=3)+
+    annotate("segment", x = 2.85, xend = 3.81, y = 0.07, yend = 0.07, colour = "#A5C0D9", size=0.3)+
+    annotate("segment", x = 2.85, xend = 2.85,y = 0.03, yend = 0.07, colour = "#A5C0D9", size=0.3)+
+    annotate("segment", x = 3.81, xend = 3.81,  y = 0.03, yend = 0.07,   colour = "#A5C0D9", size=0.3)+
+    annotate("text", x = 3.3, y = 0.075, colour = "#A5C0D9", label="***", size=3)+
+    annotate("segment", x = 2.2, xend = 3.2, y = 0.05, yend = 0.05, colour =  "#CEBCDE", size=0.3)+
+    annotate("segment", x = 2.2, xend = 2.2, y = 0.035, yend = 0.05, colour = "#CEBCDE", size=0.3)+
+    annotate("segment", x = 3.2, xend = 3.2, y = 0.035, yend = 0.05, colour = "#CEBCDE", size=0.3)+
+    annotate("text", x = 2.7, y = 0.055, colour = "#CEBCDE", label="***", size=3)+
+    annotate("text", x=4.3, y=0.09, color="gray20", label="Ts", size=4, hjust=0)+
+    annotate("text", x=4.3, y=0.05, color="gray20", label="Tvs",size=4, hjust=0)+
+    annotate("point",x=4.2, y=0.09, fill=colors2[3],shape=21, color="gray30",size=2.5)+
+    annotate("point",x=4.2, y=0.05, fill=colors2[2],shape=21, color="gray30",size=2.5)
+ggsave("Output/MutFreq/MF.byTyep_box_CI.pdf", width = 4.8, height = 3.7)
 
 
 
@@ -170,106 +123,38 @@ genenames<-genes$Gene[2:12]
 mf1<-merge(Ts, genetable, by="pos", all.x=T )
 
 #Read the CI file
-ci<-read.csv("Output/MutFreq/CI.Ts.byGene.csv",stringsAsFactors = F, row.names = 1)
-ci$Type[ci$Type=="Nonsyn"]<-"nonsyn"
-ci$Type[ci$Type=="Syn"]<-"syn"
-ci$id<-paste0(ci$gene,".",ci$Type)
-
-ci.ac<-read.csv("Output/MutFreq/CI.Ts.byGene_Agresti-coull.csv",stringsAsFactors = F, row.names = 1)
-ci.ac$Type[ci.ac$Type=="Nonsyn"]<-"nonsyn"
-ci.ac$Type[ci.ac$Type=="Syn"]<-"syn"
-ci.ac$id<-paste0(ci.ac$gene,".",ci.ac$Type)
-
-ci.noR<-read.csv("Output/MutFreq/CI.Ts.byGene_noRescaling.csv",stringsAsFactors = F, row.names = 1)
-ci.noR$Type[ci.noR$Type=="Nonsyn"]<-"nonsyn"
-ci.noR$Type[ci.noR$Type=="Syn"]<-"syn"
-ci.noR$id<-paste0(ci.noR$gene,".",ci.noR$Type)
-
-#Calculate the mean of mut. freq.
-summary<-aggregate(mf1$mean,by=list(mf1$gene, mf1$Type),FUN=mean)
-colnames(summary)<-c("Gene","Type","Mean")
-summary$id<-paste0(summary$Gene,".",summary$Type)
-
-GeneSummary<-merge(summary, ci[c("id","low","up")], by = "id")
-colnames(GeneSummary)[5:6]<-c("CI.low","CI.up")
-
-GeneSummary<-merge(GeneSummary, ci.ac[c("id","low","up")], by = "id")
-colnames(GeneSummary)[7:8]<-c("CI.low.ac","CI.up.ac")
-
-GeneSummary<-merge(GeneSummary, ci.noR[c("id","low","up")], by = "id")
-colnames(GeneSummary)[9:10]<-c("CI.low.noR","CI.up.noR")
-
-GeneSummary$Gene<-factor(GeneSummary$Gene, levels=genenames)
-GeneSummary$Type<-factor(GeneSummary$Type,levels=c("syn","nonsyn"))
+GeneSummary<-read.csv("Output/MutFreq/SE.Ts.byGene.csv",stringsAsFactors = F, row.names = 1)
+GeneSummary$Type[GeneSummary$Type=="Nonsyn"]<-"nonsyn"
+GeneSummary$Type[GeneSummary$Type=="Syn"]<-"syn"
+GeneSummary$id<-paste0(GeneSummary$gene,".",GeneSummary$Type)
 
 mf2<-mf1[,c("pos","mean","gene","Type")]
 mf2$gene<-factor(mf2$gene, levels=genenames)
 mf2$Type<-factor(mf2$Type,levels=c("syn","nonsyn"))
 
+GeneSummary$gene<-factor(GeneSummary$gene, levels=genenames)
+GeneSummary$Type<-factor(GeneSummary$Type, levels = c("syn","nonsyn"))
+
 
 ybreaks<- c(10^(-4),10^(-3),10^(-2),10^(-1)) 
 ggplot()+
-    geom_violin(data=mf2, aes(x=gene, y=mean, color=Type, fill=Type), size=.2,trim=F)+
+    geom_violin(data=mf2, aes(x=gene, y=mean, color=Type, fill=Type),position = position_dodge(width = 1), size=.2,trim=F)+
     scale_y_continuous(trans="log10",breaks=ybreaks, labels=label_scientific)+
-    geom_point(data=GeneSummary, aes(x=Gene, y=Mean, color=Type),size=1,
-               position = position_dodge(width = 1))+
-    geom_errorbar(data=GeneSummary, aes(x=Gene,y=Mean,ymin=Mean-CI.low , ymax=Mean+CI.up,fill=Type), 
-                  position=position_dodge(1), size=0.2, width=.3, color="gray30")+
+    #geom_point(data=GeneSummary, aes(x=gene, y=mean, color=Type),size=1,
+    #           position = position_dodge(width = 1))+
+    geom_errorbar(data=GeneSummary, aes(x=gene,y=mean,ymin=mean-ci , ymax=mean+ci,fill=Type), 
+                  position=position_dodge(width = 1), size=0.2, width=.3, color="gray30")+
     xlab('')+ylab('Mutation frequency')+
-    geom_point(data=GeneSummary, aes(x=Gene, y=Mean, fill=Type),size=1,color="gray40",
+    geom_point(data=GeneSummary, aes(x=gene, y=mean, fill=Type),size=1,color="gray40",
                position = position_dodge(width = 1))+
     theme_classic()+
     theme(panel.grid.major.x = element_blank())+
     geom_vline(xintercept = 1:10+0.5,  color = "gray80", size=.4)+
-    scale_color_manual(values=colors2[c(5,1)])+
-    scale_fill_manual(values=col2_light1[c(5,1)])+
+    scale_color_manual(values=colors2[c(5,1)], guide="none")+
+    scale_fill_manual(values=col2_light1[c(5,1)], labels=c("Syn","Nonsyn"))+
     theme(legend.title = element_blank())+
     annotate("text", x=c(1,2,4:11), y=rep(0.0003, times=10), label="***",size=3.6, color="slategray3")
 ggsave("Output/MutFreq/MF_violinePlot.byGene.pdf", width = 7, height = 5)
-
-#with agresi-coull method
-ggplot()+
-    geom_violin(data=mf2, aes(x=gene, y=mean, color=Type, fill=Type), size=.2,trim=F)+
-    scale_y_continuous(trans="log10",breaks=ybreaks, labels=label_scientific)+
-    geom_point(data=GeneSummary, aes(x=Gene, y=Mean, color=Type),size=1,
-               position = position_dodge(width = 1))+
-    geom_errorbar(data=GeneSummary, aes(x=Gene,y=Mean,ymin=Mean-CI.low.ac , ymax=Mean+CI.up.ac,fill=Type), 
-                  position=position_dodge(1), size=0.2, width=.2, color="gray30")+
-    xlab('')+ylab('Mutation frequency')+
-    geom_point(data=GeneSummary, aes(x=Gene, y=Mean, fill=Type),size=1,color="gray40",
-               position = position_dodge(width = 1))+
-    theme_classic()+
-    theme(panel.grid.major.x = element_blank())+
-    geom_vline(xintercept = 1:10+0.5,  color = "gray80", size=.4)+
-    scale_color_manual(values=colors2[c(5,1)])+
-    scale_fill_manual(values=col2_light1[c(5,1)])+
-    theme(legend.title = element_blank())+
-    annotate("text", x=c(1,2,4:11), y=rep(0.0003, times=10), label="***",size=3.6, color="slategray3")
-ggsave("Output/MutFreq/MF_violinePlot.byGene_AC.pdf", width = 7, height = 5)
-
-#without rescaling factors
-ggplot()+
-    geom_violin(data=mf2, aes(x=gene, y=mean, color=Type, fill=Type), size=.2,trim=F)+
-    scale_y_continuous(trans="log10",breaks=ybreaks, labels=label_scientific)+
-    geom_point(data=GeneSummary, aes(x=Gene, y=Mean, color=Type),size=1,
-               position = position_dodge(width = 1))+
-    geom_errorbar(data=GeneSummary, aes(x=Gene,y=Mean,ymin=Mean-CI.low.noR , ymax=Mean+CI.up.noR,fill=Type), 
-                  position=position_dodge(1), size=0.2, width=.2, color="gray30")+
-    xlab('')+ylab('Mutation frequency')+
-    geom_point(data=GeneSummary, aes(x=Gene, y=Mean, fill=Type),size=1,color="gray40",
-               position = position_dodge(width = 1))+
-    theme_classic()+
-    theme(panel.grid.major.x = element_blank())+
-    geom_vline(xintercept = 1:10+0.5,  color = "gray80", size=.4)+
-    scale_color_manual(values=colors2[c(5,1)])+
-    scale_fill_manual(values=col2_light1[c(5,1)])+
-    theme(legend.title = element_blank())+
-    annotate("text", x=c(1,2,4:11), y=rep(0.0003, times=10), label="***",size=3.6, color="slategray3")
-ggsave("Output/MutFreq/MF_violinePlot.byGene_noRescaling.pdf", width = 7, height = 5)
-
-
-
-
 
 
 

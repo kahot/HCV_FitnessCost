@@ -1,6 +1,7 @@
 #Estimate mutation rates using nonsense mutations
 library(reshape2)
 library(colorspace)
+library(boot)
 source("Rscripts/label_scientific.R")
 source("Rscripts/baseRscript.R")
 colors2<-qualitative_hcl(6, palette="Dark3")
@@ -49,10 +50,10 @@ mean(stopTv2$mean[stopTv2$ref=="t"]) # 0.0001766808
 
 
 ## mutation rates from Geller
-geller<-read.csv("Data/Geller.mutation.rates.csv", stringsAsFactors = F, row.names = 1)
-geller<-geller[!(geller$mutation %in% c("AA","CC","GG","UU")),]
+geller<-read.csv("Output/Geller/Geller.MutRates.Summary_updated.csv", stringsAsFactors = F, row.names = 1)
+geller<-geller[!(geller$Mutation %in% c("AA","CC","GG","UU")),]
 
-Mutrates<-data.frame(mutation=c("CT","GA","CA","TA","AT","CG","GT","TG"),
+Mutrates<-data.frame(Mutation=c("CT","GA","CA","TA","AT","CG","GT","TG"),
            Estimated=c(mean(stopG$mean), 
                       mean(stopC$mean),
                       mean(stopTv1$mean[stopTv1$ref=="c"]), 
@@ -62,17 +63,17 @@ Mutrates<-data.frame(mutation=c("CT","GA","CA","TA","AT","CG","GT","TG"),
                       mean(stopTv2$mean[stopTv2$ref=="g"]), 
                       mean(stopTv2$mean[stopTv2$ref=="t"]) ))
 
-geller$mutation<-gsub("U","T",geller$mutation)
+geller$Mutation<-gsub("U","T",geller$Mutation)
 
-Mutrates<-merge(Mutrates, geller[,1:2], by="mutation", all.y = T )
+Mutrates<-merge(Mutrates, geller[,1:2], by="Mutation", all.y = T )
 colnames(Mutrates)[2:3]<-c("In vivo estimation", "In vitro")
 
 #order based on mut rates
 Mutrates<-Mutrates[order(Mutrates$`In vitro`, decreasing = T),]
-Mutrates$mutation<-factor(Mutrates$mutation, levels=paste0(Mutrates$mutation))                           
+Mutrates$mutation<-factor(Mutrates$Mutation, levels=paste0(Mutrates$Mutation))                           
 
 MutratesM<-melt(Mutrates)
-ggplot(MutratesM, aes(x= mutation, y=value, color=variable ))+
+ggplot(MutratesM, aes(x= Mutation, y=value, color=variable ))+
         geom_point(size=2.4)+
         scale_y_continuous(trans = "log",labels=label_scientific, breaks=c(10^-7, 10^-6,10^-5, 10^-4, 10^-3))+
         scale_color_manual(values=colors2[c(1,4)], labels=c("In vivo", "In vitro"))+
@@ -89,6 +90,31 @@ ggsave("Output/SummaryFig/Estimated_MutRates_invivo-invitro.pdf", width = 6, hei
 cor.test(Mutrates$`In vivo estimation`, Mutrates$`In vitro`, method="spearman")
 #S = 18, p-value = 0.02793
 #rho 0.7857143
+
+#function to extract the estimate of the cor.test
+rho <- function(x, y, indices){
+    rho <- cor.test(x[indices], y[indices],  method = c("spearman"))
+    return(rho$estimate)
+}
+
+mutrates<-Mutrates[!is.na(Mutrates$`In vivo estimation`),]
+colnames(mutrates)[2:3]<-c("x","y")
+
+results <- boot(mutrates, 
+           statistic = function(mutrates, i) {
+               cor(mutrates[i, "x"], mutrates[i, "y"], method='spearman')},
+           R = 1000
+)
+#boot.rho <- boot(mutrates$`In vivo estimation`, y=mutrates$`In vitro`, rho, R=2000, parallel = "multicore")
+
+
+boot.ci(results, conf=0.95, type=c("norm","basic", "perc") )
+
+#Intervals : 
+#Level      Normal              Basic              Percentile     
+#95%   ( 0.3604,  1.3108 )   ( 0.5714,  1.4828 )   ( 0.0886,  1.0000 )  
+
+
 
 #correlation plot
 mrates2<-Mutrates[!is.na(Mutrates$`In vivo estimation`),]

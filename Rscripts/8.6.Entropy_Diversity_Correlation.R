@@ -3,6 +3,7 @@
 library(ggplot2)
 library(colorspace)
 library(purrr)
+library(boot)
 
 cols2<-c("#66CCEE","#EE667799" ,"#22883399")
 colors2<-qualitative_hcl(6, palette="Dark3")
@@ -38,6 +39,25 @@ dev.off()
 
 #### 
 # Null hypothesis of correlation =1. Test the deviations od the differences from 0
+#see https://stats.stackexchange.com/questions/14220/how-to-test-hypothesis-that-correlation-is-equal-to-given-value-using-r
+# & https://stackoverflow.com/questions/8113460/correlation-significance-for-non-zero-null-hypothesis-using-r
+
+#function to extract the estimate of the cor.test
+rho <- function(x, y, indices){
+    rho <- cor.test(x[indices], y[indices],  method = c("spearman"))
+    return(rho$estimate)
+}
+
+boot.rho <- boot(compare$mean, y=-compare$Entropy, rho, R=2000, parallel = "multicore")
+
+boot.ci(boot.rho, conf=0.95, type=c("norm","basic", "perc") )
+#Intervals : 
+#Level      Normal              Basic              Percentile     
+#95%   ( 0.6774,  0.7040 )   ( 0.6776,  0.7040 )   ( 0.6777,  0.7041 )  
+#Calculations and Intervals on Original Scale
+
+
+
 
 #normalize both values for exact comparison
 norm<-function(x){(x-min(x))/(max(x)-min(x))}

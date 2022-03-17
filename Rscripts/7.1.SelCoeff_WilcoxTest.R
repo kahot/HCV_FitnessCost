@@ -1,5 +1,6 @@
 # Calculate selection coefficients for each site and run statistical tests
 source("Rscripts/Pcorrection.R")
+source("Rscripts/baseRscript.R")
 
 #Read the estiamted mutatio rates of Geller's
 mutrates<-read.csv("Output/Geller/Geller.MutRates.Summary_updated.csv", row.names = 1, stringsAsFactors = F)
@@ -20,18 +21,12 @@ df$EstSC<-as.numeric(df$EstSC)
 
 
 #Estimate CI for SC
-reads<-read.csv("Output/ReadDepth_mean.csv",stringsAsFactors = F, row.names = 1)
-
 df<-df[df$pos>341&df$pos<8575,]
-reads<-reads[reads$pos>341&reads$pos<8575,]
-se<-data.frame(pos=df$pos)
-df$se<-sqrt(df$EstSC*(1-df$EstSC)/reads$Depth)
-df$CI<-1.96*df$se
 write.csv(df,"Output/SelCoeff/SC.csv")
 
 
 ## Test of SCs by type and by CpG
-#=df<-read.csv("Output/SelCoeff/SC.csv", stringsAsFactors = F, row.names = 1)
+#df<-read.csv("Output/SelCoeff/SC.csv", stringsAsFactors = F, row.names = 1)
 
 # Use A & T only for CpG Analysis
 ty<-which(colnames(df)=="Type")
@@ -106,15 +101,15 @@ for (i in 1:3){
      for (j in 1:4 ){
         sc<- dat[dat[,ty]==typeofsite[i] & dat$ref==wtnt[j], c("EstSC","se")]
         S[typeofsite[i],wtnt[j]]<-mean(sc$EstSC, na.rm=T)
-        se[typeofsite[i],wtnt[j]]<-mean(sc$se,na.rm=T) 
+        se[typeofsite[i],wtnt[j]]<-std.error(mean(sc$EstSC, na.rm=T)) 
         
         S_NoCpG<-dat[dat$Type==typeofsite[i] & dat$ref==wtnt[j] & dat$makesCpG==0,c("EstSC","se")]
         S_nonCpG[typeofsite[i],wtnt[j]]<-mean(S_NoCpG$EstSC, na.rm=T)
-        se_nonCpG[typeofsite[i],wtnt[j]]<-mean(S_NoCpG$se, na.rm=T)
+        se_nonCpG[typeofsite[i],wtnt[j]]<-std.error(mean(S_NoCpG$EstSC, na.rm=T))
         
         Sc_CpG<-dat[dat$Type==typeofsite[i] & dat$ref==wtnt[j] & dat$makesCpG==1,c("EstSC","se") ]
         S_CpG[typeofsite[i],wtnt[j]]<-mean(Sc_CpG$EstSC, na.rm=T)
-        se_CpG[typeofsite[i],wtnt[j]]<-mean(Sc_CpG$se, na.rm=T)
+        se_CpG[typeofsite[i],wtnt[j]]<-std.error(mean(Sc_CpG$EstSC, na.rm=T))
         
         SC[[k]]<-sc
         names(SC)[k]<-paste0(typeofsite[i],"_",wtnt[j])
@@ -217,6 +212,19 @@ genetable$gene<-gene.vector
 end<-df$pos[nrow(df)]
 genetable<-genetable[genetable$pos>=342&genetable$pos<=end,]
 sc<-merge(df, genetable, by="pos")
+
+#sc by gene
+gene.summary<-data.frame(gene=genenames[2:12])
+for (i in 1:nrow(gene.summary)){
+    sc2<-sc[sc$gene==gene.summary$gene[i],]
+    gene.summary$mean[i]<-mean(sc2$EstSC, na.rm = T)
+    gene.summary$SE[i]<-std.error(sc2$EstSC, na.rm=T)
+    gene.summary$CI[i]<-std.error(sc2$EstSC, na.rm=T)*1.96
+    
+}
+write.csv(gene.summary, "Output/SelCoeff/SC_byGene.csv")
+
+
 
 Gcomb<-t(combn(genenames[2:12],2))
 
