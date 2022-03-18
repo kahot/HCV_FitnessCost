@@ -19,8 +19,6 @@ for (j in 1:nrow(df)){
 }
 df$EstSC<-as.numeric(df$EstSC)
 
-
-#Estimate CI for SC
 df<-df[df$pos>341&df$pos<8575,]
 write.csv(df,"Output/SelCoeff/SC.csv")
 
@@ -44,8 +42,8 @@ for (typeofsite in c("syn", "nonsyn","stop")){
         typev<-paste0(typeofsite,"_all")
         assign(typev, all)
         scsum$mean[k]<-mean(all, na.rm=T)
-        scsum$se[k]<-mean(dat$se[dat$Type==typeofsite],na.rm=T)
-        scsum$CI[k]<-mean(dat$CI[dat$Type==typeofsite],na.rm=T)
+        scsum$se[k]<-std.error(all,na.rm=T)
+        scsum$CI[k]<-std.error(all)*1.96
         
         cpgv1<-paste0(typeofsite,"_allCpG")
         assign(cpgv1, allcpg)
@@ -58,8 +56,8 @@ for (typeofsite in c("syn", "nonsyn","stop")){
 
 scsum[4,]<-"all"
 scsum$mean[4]<-mean(dat$EstSC, na.rm=T)
-scsum$se[4]<-mean(dat$se,na.rm=T)
-scsum$CI[4]<-mean(dat$CI,na.rm=T)
+scsum$se[4]<-std.error(dat$EstSC,na.rm=T)
+scsum$CI[4]<-std.error(dat$EstSC,na.rm=T)*1.96
 write.csv(scsum, "Output/SelCoeff/SC_summary_type.csv")
 
 #wilcox.test 
@@ -224,6 +222,7 @@ for (i in 1:nrow(gene.summary)){
 }
 write.csv(gene.summary, "Output/SelCoeff/SC_byGene.csv")
 
+sc2$EstSC
 
 
 Gcomb<-t(combn(genenames[2:12],2))

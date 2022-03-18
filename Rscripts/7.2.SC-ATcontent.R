@@ -27,15 +27,7 @@ end<-df$pos[nrow(df)]
 genetable<-genetable[genetable$pos>=342&genetable$pos<=end,]
 sc<-merge(df, genetable, by="pos")
 
-###
-#SC means & SEs by Gene
 genenames<-genes$Gene[2:12]
-AveSC<-aggregate(sc$EstSC,by=list(sc$gene), mean, na.rm = TRUE)
-colnames(AveSC)<-c("gene","SC")
-se<-aggregate(sc$se,by=list(sc$gene), mean, na.rm = TRUE)
-colnames(se)<-c("gene","SE")
-AveSC$SE<-se$SE
-AveSC$CI<-AveSC$SE*1.96
 
 #AT content of each genes:
 ATcontents<-list()
