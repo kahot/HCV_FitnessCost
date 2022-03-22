@@ -68,7 +68,7 @@ mutDF2<-mutDF[mutDF$Mutation%in% Tmutations,]
 ggplot()+
     scale_y_continuous(trans = 'log10', labels=label_scientific2)+
     geom_boxplot(data=MM2, aes(x=mutation, y=mut.rate),outlier.alpha = 0.3, color="gray60",fill=paste0(colors2[5],"66"), width=0.5)+
-    geom_errorbar(data=mutDF2, aes(x=Mutation, y=MutRate, ymin=MutRate-CI, ymax=MutRate+CI), width=0.1, size=.3, color="#507FB9")+
+    geom_errorbar(data=mutDF2, aes(x=Mutation, y=MutRate, ymin=MutRate-CI, ymax=MutRate+CI), width=0.2, size=.3, color="#507FB9")+
     geom_point(data=mutDF2, aes(x=Mutation, y=MutRate),size =1.8, color="blue")+
     theme(axis.title.x=element_blank())+ylab("Estimated mutation rate ± 95% CI")+
     theme_classic()+
